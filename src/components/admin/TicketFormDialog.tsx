@@ -7,33 +7,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HeadphonesIcon, Save } from "lucide-react";
 
-export interface TicketData {
-  id: string; customer: string; subject: string;
-  openDate: string; status: string; priority: string; description?: string;
+export interface TicketFormData {
+  customer: string; subject: string; description: string;
+  priority: string; status: string;
 }
 
-const emptyTicket: TicketData = { id: "", customer: "", subject: "", openDate: new Date().toLocaleDateString("he-IL"), status: "חדש", priority: "רגיל", description: "" };
+const empty: TicketFormData = { customer: "", subject: "", description: "", priority: "רגיל", status: "חדש" };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
-  initialData?: TicketData | null; onSave: (data: TicketData) => void;
+  initialData?: (TicketFormData & { id?: string }) | null;
+  onSave: (data: TicketFormData, id?: string) => void;
 }
 
 export function TicketFormDialog({ open, onOpenChange, initialData, onSave }: Props) {
-  const [form, setForm] = useState<TicketData>(emptyTicket);
+  const [form, setForm] = useState<TicketFormData>(empty);
   const isEdit = !!initialData;
-  useEffect(() => { setForm(initialData || emptyTicket); }, [initialData, open]);
-  const set = (key: keyof TicketData, value: string) => setForm((p) => ({ ...p, [key]: value }));
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form); onOpenChange(false); };
+  useEffect(() => {
+    if (initialData) { const { id, ...rest } = initialData as any; setForm({ ...empty, ...rest }); }
+    else setForm(empty);
+  }, [initialData, open]);
+  const set = (key: keyof TicketFormData, value: string) => setForm((p) => ({ ...p, [key]: value }));
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form, (initialData as any)?.id); onOpenChange(false); };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg rounded-2xl border-border/50 shadow-2xl" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-xl font-extrabold flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
-              <HeadphonesIcon className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm"><HeadphonesIcon className="h-4 w-4 text-primary-foreground" /></div>
             {isEdit ? "עריכת פנייה" : "פנייה חדשה"}
           </DialogTitle>
         </DialogHeader>
@@ -56,7 +58,7 @@ export function TicketFormDialog({ open, onOpenChange, initialData, onSave }: Pr
               </Select>
             </div>
           </div>
-          <div className="space-y-2"><Label className="font-semibold text-xs">תיאור</Label><Textarea value={form.description || ""} onChange={(e) => set("description", e.target.value)} rows={3} className="rounded-xl" /></div>
+          <div className="space-y-2"><Label className="font-semibold text-xs">תיאור</Label><Textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={3} className="rounded-xl" /></div>
           <div className="flex gap-2 justify-end pt-3 border-t border-border/50">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">ביטול</Button>
             <Button type="submit" className="rounded-xl gradient-primary border-0 shadow-glow-sm hover:shadow-glow transition-shadow gap-1.5"><Save className="h-4 w-4" />{isEdit ? "עדכן" : "הוסף"}</Button>
