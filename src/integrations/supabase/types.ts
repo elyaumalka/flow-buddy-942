@@ -14,6 +14,432 @@ export type Database = {
   }
   public: {
     Tables: {
+      collections: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          fail_date: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          fail_date?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          fail_date?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      commissions: {
+        Row: {
+          amount: number
+          clients_count: number
+          created_at: string
+          created_by: string | null
+          id: string
+          marketer_id: string | null
+          marketer_name: string
+          month: string
+          proof_url: string | null
+          status: string
+        }
+        Insert: {
+          amount?: number
+          clients_count?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          marketer_id?: string | null
+          marketer_name: string
+          month: string
+          proof_url?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          clients_count?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          marketer_id?: string | null
+          marketer_name?: string
+          month?: string
+          proof_url?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_marketer_id_fkey"
+            columns: ["marketer_id"]
+            isOneToOne: false
+            referencedRelation: "marketers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          community: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          join_date: string
+          last_login: string | null
+          marketer_id: string | null
+          marketer_name: string | null
+          modules: string | null
+          name: string
+          phone: string | null
+          subscription: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          community?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          join_date?: string
+          last_login?: string | null
+          marketer_id?: string | null
+          marketer_name?: string | null
+          modules?: string | null
+          name: string
+          phone?: string | null
+          subscription?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          community?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          join_date?: string
+          last_login?: string | null
+          marketer_id?: string | null
+          marketer_name?: string | null
+          modules?: string | null
+          name?: string
+          phone?: string | null
+          subscription?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_marketer_id_fkey"
+            columns: ["marketer_id"]
+            isOneToOne: false
+            referencedRelation: "marketers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          expense_date: string
+          id: string
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          expense_date?: string
+          id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          expense_date?: string
+          id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string
+          current_amount: number
+          goal_type: string
+          id: string
+          target_amount: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_amount?: number
+          goal_type?: string
+          id?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_amount?: number
+          goal_type?: string
+          id?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      income: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          id: string
+          income_date: string
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          id?: string
+          income_date?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          id?: string
+          income_date?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          city: string | null
+          community: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          marketer_id: string | null
+          marketer_name: string | null
+          name: string
+          phone: string | null
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          community?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          marketer_id?: string | null
+          marketer_name?: string | null
+          name: string
+          phone?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          community?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          marketer_id?: string | null
+          marketer_name?: string | null
+          name?: string
+          phone?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketers: {
+        Row: {
+          commission: string | null
+          community: string | null
+          coupon: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          id_number: string | null
+          name: string
+          partner_id: string | null
+          partner_name: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          commission?: string | null
+          community?: string | null
+          coupon?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          id_number?: string | null
+          name: string
+          partner_id?: string | null
+          partner_name?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          commission?: string | null
+          community?: string | null
+          coupon?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          id_number?: string | null
+          name?: string
+          partner_id?: string | null
+          partner_name?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketers_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          commission: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          commission?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          commission?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          id: string
+          invoice: string | null
+          payment_date: string
+          status: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          id?: string
+          invoice?: string | null
+          payment_date?: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          id?: string
+          invoice?: string | null
+          payment_date?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -43,6 +469,114 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string
+          customer: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by: string
+          customer?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string
+          customer?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tickets: {
+        Row: {
+          created_at: string
+          created_by: string
+          customer: string
+          description: string | null
+          id: string
+          priority: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          customer: string
+          description?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          customer?: string
+          description?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tithes: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          recipient: string | null
+          tithe_date: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recipient?: string | null
+          tithe_date?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recipient?: string | null
+          tithe_date?: string
           user_id?: string
         }
         Relationships: []

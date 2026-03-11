@@ -6,26 +6,39 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus, Save } from "lucide-react";
 
-export interface LeadData {
+export interface LeadFormData {
   name: string; phone: string; email: string; city: string;
-  community: string; status: string; source: string; marketer: string; date: string;
+  community: string; status: string; source: string; marketer_name: string;
 }
 
-const emptyLead: LeadData = { name: "", phone: "", email: "", city: "", community: "", status: "חדש", source: "", marketer: "", date: new Date().toLocaleDateString("he-IL") };
+const emptyLead: LeadFormData = { name: "", phone: "", email: "", city: "", community: "", status: "חדש", source: "", marketer_name: "" };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
-  initialData?: LeadData | null; onSave: (data: LeadData) => void;
+  initialData?: (LeadFormData & { id?: string }) | null;
+  onSave: (data: LeadFormData, id?: string) => void;
 }
 
 export function LeadFormDialog({ open, onOpenChange, initialData, onSave }: Props) {
-  const [form, setForm] = useState<LeadData>(emptyLead);
+  const [form, setForm] = useState<LeadFormData>(emptyLead);
   const isEdit = !!initialData;
 
-  useEffect(() => { setForm(initialData || emptyLead); }, [initialData, open]);
-  const set = (key: keyof LeadData, value: string) => setForm((p) => ({ ...p, [key]: value }));
+  useEffect(() => {
+    if (initialData) {
+      const { id, ...rest } = initialData as any;
+      setForm({ ...emptyLead, ...rest });
+    } else {
+      setForm(emptyLead);
+    }
+  }, [initialData, open]);
 
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form); onOpenChange(false); };
+  const set = (key: keyof LeadFormData, value: string) => setForm((p) => ({ ...p, [key]: value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(form, (initialData as any)?.id);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -40,26 +53,11 @@ export function LeadFormDialog({ open, onOpenChange, initialData, onSave }: Prop
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">שם מלא</Label>
-              <Input value={form.name} onChange={(e) => set("name", e.target.value)} required className="rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">טלפון</Label>
-              <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} dir="ltr" required className="rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">מייל</Label>
-              <Input value={form.email} onChange={(e) => set("email", e.target.value)} type="email" dir="ltr" className="rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">כתובת</Label>
-              <Input value={form.city} onChange={(e) => set("city", e.target.value)} className="rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">קהילה</Label>
-              <Input value={form.community} onChange={(e) => set("community", e.target.value)} className="rounded-xl" />
-            </div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">שם מלא</Label><Input value={form.name} onChange={(e) => set("name", e.target.value)} required className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">טלפון</Label><Input value={form.phone} onChange={(e) => set("phone", e.target.value)} dir="ltr" required className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">מייל</Label><Input value={form.email} onChange={(e) => set("email", e.target.value)} type="email" dir="ltr" className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">כתובת</Label><Input value={form.city} onChange={(e) => set("city", e.target.value)} className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">קהילה</Label><Input value={form.community} onChange={(e) => set("community", e.target.value)} className="rounded-xl" /></div>
             <div className="space-y-2">
               <Label className="font-semibold text-xs">סטטוס</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v)}>
@@ -84,10 +82,7 @@ export function LeadFormDialog({ open, onOpenChange, initialData, onSave }: Prop
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">משווק מקושר</Label>
-              <Input value={form.marketer} onChange={(e) => set("marketer", e.target.value)} className="rounded-xl" />
-            </div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">משווק מקושר</Label><Input value={form.marketer_name} onChange={(e) => set("marketer_name", e.target.value)} className="rounded-xl" /></div>
           </div>
           <div className="flex gap-2 justify-end pt-3 border-t border-border/50">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">ביטול</Button>

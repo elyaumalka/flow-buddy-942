@@ -6,34 +6,36 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Megaphone, Save } from "lucide-react";
 
-export interface MarketerData {
+export interface MarketerFormData {
   name: string; phone: string; email: string; id_number: string;
   community: string; commission: string; coupon: string;
-  partner: string; clients: number; status: string;
+  partner_name: string; status: string;
 }
 
-const emptyMarketer: MarketerData = { name: "", phone: "", email: "", id_number: "", community: "", commission: "", coupon: "", partner: "", clients: 0, status: "פעיל" };
+const empty: MarketerFormData = { name: "", phone: "", email: "", id_number: "", community: "", commission: "", coupon: "", partner_name: "", status: "פעיל" };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
-  initialData?: MarketerData | null; onSave: (data: MarketerData) => void;
+  initialData?: (MarketerFormData & { id?: string }) | null;
+  onSave: (data: MarketerFormData, id?: string) => void;
 }
 
 export function MarketerFormDialog({ open, onOpenChange, initialData, onSave }: Props) {
-  const [form, setForm] = useState<MarketerData>(emptyMarketer);
+  const [form, setForm] = useState<MarketerFormData>(empty);
   const isEdit = !!initialData;
-  useEffect(() => { setForm(initialData || emptyMarketer); }, [initialData, open]);
-  const set = (key: keyof MarketerData, value: any) => setForm((p) => ({ ...p, [key]: value }));
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form); onOpenChange(false); };
+  useEffect(() => {
+    if (initialData) { const { id, ...rest } = initialData as any; setForm({ ...empty, ...rest }); }
+    else setForm(empty);
+  }, [initialData, open]);
+  const set = (key: keyof MarketerFormData, value: any) => setForm((p) => ({ ...p, [key]: value }));
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form, (initialData as any)?.id); onOpenChange(false); };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg rounded-2xl border-border/50 shadow-2xl" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-xl font-extrabold flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
-              <Megaphone className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm"><Megaphone className="h-4 w-4 text-primary-foreground" /></div>
             {isEdit ? "עריכת משווק" : "משווק חדש"}
           </DialogTitle>
         </DialogHeader>
@@ -46,7 +48,7 @@ export function MarketerFormDialog({ open, onOpenChange, initialData, onSave }: 
             <div className="space-y-2"><Label className="font-semibold text-xs">קהילה</Label><Input value={form.community} onChange={(e) => set("community", e.target.value)} className="rounded-xl" /></div>
             <div className="space-y-2"><Label className="font-semibold text-xs">תנאי עמלה</Label><Input value={form.commission} onChange={(e) => set("commission", e.target.value)} placeholder="8% / ₪200 לכל לקוח" className="rounded-xl" /></div>
             <div className="space-y-2"><Label className="font-semibold text-xs">קוד קופון</Label><Input value={form.coupon} onChange={(e) => set("coupon", e.target.value)} dir="ltr" className="rounded-xl" /></div>
-            <div className="space-y-2"><Label className="font-semibold text-xs">שותף מקושר</Label><Input value={form.partner} onChange={(e) => set("partner", e.target.value)} className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">שותף מקושר</Label><Input value={form.partner_name} onChange={(e) => set("partner_name", e.target.value)} className="rounded-xl" /></div>
             <div className="space-y-2">
               <Label className="font-semibold text-xs">סטטוס</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v)}>

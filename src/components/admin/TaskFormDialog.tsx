@@ -7,33 +7,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckSquare, Save } from "lucide-react";
 
-export interface TaskData {
-  title: string; customer: string; dueDate: string;
+export interface TaskFormData {
+  title: string; customer: string; due_date: string;
   priority: string; status: string; description: string;
 }
 
-const emptyTask: TaskData = { title: "", customer: "", dueDate: "", priority: "רגיל", status: "חדש", description: "" };
+const empty: TaskFormData = { title: "", customer: "", due_date: "", priority: "רגיל", status: "חדש", description: "" };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
-  initialData?: TaskData | null; onSave: (data: TaskData) => void;
+  initialData?: (TaskFormData & { id?: string }) | null;
+  onSave: (data: TaskFormData, id?: string) => void;
 }
 
 export function TaskFormDialog({ open, onOpenChange, initialData, onSave }: Props) {
-  const [form, setForm] = useState<TaskData>(emptyTask);
+  const [form, setForm] = useState<TaskFormData>(empty);
   const isEdit = !!initialData;
-  useEffect(() => { setForm(initialData || emptyTask); }, [initialData, open]);
-  const set = (key: keyof TaskData, value: string) => setForm((p) => ({ ...p, [key]: value }));
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form); onOpenChange(false); };
+  useEffect(() => {
+    if (initialData) { const { id, ...rest } = initialData as any; setForm({ ...empty, ...rest }); }
+    else setForm(empty);
+  }, [initialData, open]);
+  const set = (key: keyof TaskFormData, value: string) => setForm((p) => ({ ...p, [key]: value }));
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form, (initialData as any)?.id); onOpenChange(false); };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg rounded-2xl border-border/50 shadow-2xl" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-xl font-extrabold flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
-              <CheckSquare className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm"><CheckSquare className="h-4 w-4 text-primary-foreground" /></div>
             {isEdit ? "עריכת משימה" : "משימה חדשה"}
           </DialogTitle>
         </DialogHeader>
@@ -41,7 +43,7 @@ export function TaskFormDialog({ open, onOpenChange, initialData, onSave }: Prop
           <div className="space-y-2"><Label className="font-semibold text-xs">כותרת משימה</Label><Input value={form.title} onChange={(e) => set("title", e.target.value)} required className="rounded-xl" /></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2"><Label className="font-semibold text-xs">לקוח / איש קשר</Label><Input value={form.customer} onChange={(e) => set("customer", e.target.value)} className="rounded-xl" /></div>
-            <div className="space-y-2"><Label className="font-semibold text-xs">תאריך יעד</Label><Input value={form.dueDate} onChange={(e) => set("dueDate", e.target.value)} placeholder="DD/MM/YYYY" dir="ltr" className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">תאריך יעד</Label><Input value={form.due_date} onChange={(e) => set("due_date", e.target.value)} placeholder="DD/MM/YYYY" dir="ltr" className="rounded-xl" /></div>
             <div className="space-y-2">
               <Label className="font-semibold text-xs">דחיפות</Label>
               <Select value={form.priority} onValueChange={(v) => set("priority", v)}>
