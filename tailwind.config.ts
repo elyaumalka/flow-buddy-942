@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
+        discovery: ["Discovery", "Heebo", "sans-serif"],
         heebo: ["Heebo", "sans-serif"],
       },
       colors: {
