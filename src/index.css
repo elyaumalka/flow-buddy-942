@@ -5,52 +5,52 @@
 @layer base {
   :root {
     --background: 210 20% 98%;
-    --foreground: 209 61% 16%;
+    --foreground: 209 61% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 209 61% 16%;
+    --card-foreground: 209 61% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 209 61% 16%;
+    --popover-foreground: 209 61% 14%;
 
-    --primary: 197 100% 35%;
+    --primary: 192 85% 38%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 30% 94%;
-    --secondary-foreground: 209 61% 16%;
+    --secondary: 195 25% 93%;
+    --secondary-foreground: 209 61% 14%;
 
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
-    --muted: 195 20% 94%;
-    --muted-foreground: 210 12% 50%;
+    --muted: 195 15% 93%;
+    --muted-foreground: 210 10% 50%;
 
-    --accent: 170 60% 45%;
+    --accent: 170 65% 40%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 20% 88%;
-    --input: 200 20% 88%;
-    --ring: 197 100% 35%;
+    --border: 200 15% 90%;
+    --input: 200 15% 88%;
+    --ring: 192 85% 38%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    --sidebar-background: 209 61% 12%;
-    --sidebar-foreground: 195 20% 90%;
-    --sidebar-primary: 170 80% 50%;
-    --sidebar-primary-foreground: 209 61% 12%;
-    --sidebar-accent: 209 40% 20%;
-    --sidebar-accent-foreground: 170 80% 60%;
-    --sidebar-border: 209 40% 20%;
-    --sidebar-ring: 170 80% 50%;
+    --sidebar-background: 209 62% 10%;
+    --sidebar-foreground: 195 20% 92%;
+    --sidebar-primary: 170 80% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 209 45% 18%;
+    --sidebar-accent-foreground: 170 80% 62%;
+    --sidebar-border: 209 40% 16%;
+    --sidebar-ring: 170 80% 52%;
 
-    --chart-1: 197 100% 35%;
+    --chart-1: 192 85% 38%;
     --chart-2: 170 80% 42%;
     --chart-3: 43 96% 56%;
     --chart-4: 280 67% 60%;
-    --chart-5: 0 84% 60%;
+    --chart-5: 0 75% 55%;
   }
 
   .dark {
@@ -94,5 +94,56 @@
   body {
     @apply bg-background text-foreground font-heebo;
     direction: rtl;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+
+  .glass-strong {
+    @apply bg-card/90 backdrop-blur-xl border border-border/60 shadow-lg;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+
+  .gradient-primary-soft {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1));
+  }
+
+  .gradient-sidebar {
+    background: linear-gradient(180deg, hsl(209 62% 10%), hsl(209 62% 7%));
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1 shadow-card-hover;
+  }
+
+  .card-premium {
+    @apply rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300;
+  }
+
+  .card-premium:hover {
+    @apply shadow-premium border-primary/20 -translate-y-0.5;
+  }
+
+  .stat-icon {
+    @apply h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300;
+  }
+
+  .stat-icon:hover {
+    @apply scale-110;
   }
 }
