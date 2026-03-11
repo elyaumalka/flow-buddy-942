@@ -1,10 +1,20 @@
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Bell } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminLayout() {
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -20,8 +30,11 @@ export default function AdminLayout() {
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -left-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">3</span>
               </Button>
+              <Button variant="ghost" size="icon" onClick={handleSignOut} title="התנתק">
+                <LogOut className="h-5 w-5" />
+              </Button>
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
-                מנ
+                {user?.user_metadata?.full_name?.slice(0, 2) || "מנ"}
               </div>
             </div>
           </header>
