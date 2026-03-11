@@ -3,6 +3,14 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+
+import Login from "@/pages/auth/Login";
+import Signup from "@/pages/auth/Signup";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ResetPassword from "@/pages/auth/ResetPassword";
+
 import AdminLayout from "@/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminLeads from "@/pages/admin/Leads";
@@ -22,32 +30,80 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function RoleRedirect() {
+  const { role, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (role === "admin") return <Navigate to="/admin" replace />;
+  if (role === "marketer") return <Navigate to="/marketer" replace />;
+  return <Navigate to="/dashboard" replace />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/admin" replace />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="leads" element={<AdminLeads />} />
-            <Route path="partners" element={<AdminPartners />} />
-            <Route path="marketers" element={<AdminMarketers />} />
-            <Route path="customers" element={<AdminCustomers />} />
-            <Route path="payments" element={<AdminPayments />} />
-            <Route path="collections" element={<AdminCollections />} />
-            <Route path="commissions" element={<AdminCommissions />} />
-            <Route path="reports" element={<AdminReports />} />
-            <Route path="statistics" element={<AdminStatistics />} />
-            <Route path="tasks" element={<AdminTasks />} />
-            <Route path="calendar" element={<AdminCalendar />} />
-            <Route path="tickets" element={<AdminTickets />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* Role redirect */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <RoleRedirect />
+              </ProtectedRoute>
+            } />
+
+            {/* Admin routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="leads" element={<AdminLeads />} />
+              <Route path="partners" element={<AdminPartners />} />
+              <Route path="marketers" element={<AdminMarketers />} />
+              <Route path="customers" element={<AdminCustomers />} />
+              <Route path="payments" element={<AdminPayments />} />
+              <Route path="collections" element={<AdminCollections />} />
+              <Route path="commissions" element={<AdminCommissions />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="statistics" element={<AdminStatistics />} />
+              <Route path="tasks" element={<AdminTasks />} />
+              <Route path="calendar" element={<AdminCalendar />} />
+              <Route path="tickets" element={<AdminTickets />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
+
+            {/* Placeholder for marketer & customer dashboards */}
+            <Route path="/marketer" element={
+              <ProtectedRoute allowedRoles={["marketer"]}>
+                <div className="flex min-h-screen items-center justify-center"><h1 className="text-2xl font-bold">דשבורד משווק - בקרוב</h1></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute allowedRoles={["customer"]}>
+                <div className="flex min-h-screen items-center justify-center"><h1 className="text-2xl font-bold">דשבורד לקוח - בקרוב</h1></div>
+              </ProtectedRoute>
+            } />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
