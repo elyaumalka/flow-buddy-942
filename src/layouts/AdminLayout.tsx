@@ -36,7 +36,6 @@ export default function AdminLayout() {
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
                 {user?.user_metadata?.full_name?.slice(0, 2) || "מנ"}
               </div>
-              </div>
             </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
