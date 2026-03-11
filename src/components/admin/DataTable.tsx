@@ -2,14 +2,9 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, Plus, Download } from "lucide-react";
+import { Search, Plus, Download, Pencil } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface Column<T> {
@@ -26,16 +21,11 @@ interface DataTableProps<T> {
   addLabel?: string;
   onExport?: () => void;
   searchPlaceholder?: string;
+  onRowClick?: (item: T, index: number) => void;
 }
 
 export function DataTable<T extends Record<string, any>>({
-  data,
-  columns,
-  title,
-  onAdd,
-  addLabel = "הוספה",
-  onExport,
-  searchPlaceholder = "חיפוש...",
+  data, columns, title, onAdd, addLabel = "הוספה", onExport, searchPlaceholder = "חיפוש...", onRowClick,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
 
@@ -78,6 +68,7 @@ export function DataTable<T extends Record<string, any>>({
         <Table>
           <TableHeader>
             <TableRow>
+              {onRowClick && <TableHead className="w-10"></TableHead>}
               {columns.map((col) => (
                 <TableHead key={col.key} className="text-right">{col.header}</TableHead>
               ))}
@@ -86,13 +77,20 @@ export function DataTable<T extends Record<string, any>>({
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={columns.length + (onRowClick ? 1 : 0)} className="text-center py-8 text-muted-foreground">
                   לא נמצאו תוצאות
                 </TableCell>
               </TableRow>
             ) : (
               filtered.map((item, i) => (
-                <TableRow key={i} className="hover:bg-muted/50 transition-colors">
+                <TableRow key={i} className={`hover:bg-muted/50 transition-colors ${onRowClick ? "cursor-pointer" : ""}`}>
+                  {onRowClick && (
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onRowClick(item, i)}>
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    </TableCell>
+                  )}
                   {columns.map((col) => (
                     <TableCell key={col.key}>
                       {col.render ? col.render(item) : item[col.key]}
