@@ -1,44 +1,37 @@
 import { useState } from "react";
 import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-import { CustomerFormDialog, CustomerData } from "@/components/admin/CustomerFormDialog";
+import { CustomerFormDialog, CustomerFormData } from "@/components/admin/CustomerFormDialog";
+import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
-
-const initialCustomers: CustomerData[] = [
-  { id: "C001", name: "יוסי כהן", phone: "050-1112233", email: "yossi@example.com", community: "קהילת שלום", marketer: "אבי ישראלי", modules: "הכנסות, הוצאות", subscription: "פעיל", joinDate: "01/01/2026", lastLogin: "10/03/2026" },
-  { id: "C002", name: "רחל לוי", phone: "052-4445566", email: "rachel@example.com", community: "קהילת אור", marketer: "מיכל דוד", modules: "הכל", subscription: "פעיל", joinDate: "15/02/2026", lastLogin: "09/03/2026" },
-  { id: "C003", name: "דוד אברהם", phone: "054-7778899", email: "david@example.com", community: "קהילת חסד", marketer: "נתן ברק", modules: "הכנסות", subscription: "לא פעיל", joinDate: "20/11/2025", lastLogin: "01/02/2026" },
-];
+import { useAuth } from "@/hooks/useAuth";
 
 const columns = [
-  { key: "id", header: "מזהה" },
   { key: "name", header: "שם" },
   { key: "phone", header: "טלפון" },
   { key: "email", header: "מייל" },
   { key: "community", header: "קהילה" },
   { key: "modules", header: "מודולים" },
-  { key: "marketer", header: "משווק" },
+  { key: "marketer_name", header: "משווק" },
   { key: "subscription", header: "מנוי", render: (item: any) => <StatusBadge status={item.subscription} /> },
-  { key: "joinDate", header: "הצטרפות" },
-  { key: "lastLogin", header: "כניסה אחרונה" },
+  { key: "join_date", header: "הצטרפות", render: (item: any) => new Date(item.join_date).toLocaleDateString("he-IL") },
 ];
 
 export default function AdminCustomers() {
   const { toast } = useToast();
-  const [data, setData] = useState(initialCustomers);
+  const { user } = useAuth();
+  const { data, insert, update } = useSupabaseTable("customers");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editItem, setEditItem] = useState<CustomerData | null>(null);
-  const [editIndex, setEditIndex] = useState<number>(-1);
+  const [editItem, setEditItem] = useState<any>(null);
 
   const handleAdd = () => { setEditItem(null); setDialogOpen(true); };
-  const handleEdit = (item: CustomerData, index: number) => { setEditItem(item); setEditIndex(index); setDialogOpen(true); };
-  const handleSave = (item: CustomerData) => {
-    if (editItem) {
-      setData((d) => d.map((r, i) => (i === editIndex ? item : r)));
+  const handleEdit = (item: any) => { setEditItem(item); setDialogOpen(true); };
+  const handleSave = async (formData: CustomerFormData, id?: string) => {
+    if (id) {
+      await update({ id, ...formData });
       toast({ title: "הלקוח עודכן בהצלחה" });
     } else {
-      const newId = `C${String(data.length + 1).padStart(3, "0")}`;
-      setData((d) => [{ ...item, id: newId, joinDate: new Date().toLocaleDateString("he-IL"), lastLogin: "" }, ...d]);
+      await insert({ ...formData, created_by: user?.id });
       toast({ title: "לקוח חדש נוסף בהצלחה" });
     }
   };
