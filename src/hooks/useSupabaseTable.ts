@@ -23,7 +23,7 @@ export function useSupabaseTable<T extends Record<string, any>>(
       let q = supabase.from(table).select("*").order(orderBy, { ascending });
       const { data, error } = await q;
       if (error) throw error;
-      return data as T[];
+      return data as unknown as T[];
     },
   });
 
