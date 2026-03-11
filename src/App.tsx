@@ -26,6 +26,13 @@ import AdminTasks from "@/pages/admin/Tasks";
 import AdminCalendar from "@/pages/admin/Calendar";
 import AdminTickets from "@/pages/admin/Tickets";
 import AdminSettings from "@/pages/admin/Settings";
+import MarketerLayout from "@/layouts/MarketerLayout";
+import MarketerDashboard from "@/pages/marketer/Dashboard";
+import MarketerLeads from "@/pages/marketer/Leads";
+import MarketerTasks from "@/pages/marketer/Tasks";
+import MarketerCustomers from "@/pages/marketer/Customers";
+import MarketerCommissions from "@/pages/marketer/Commissions";
+import MarketerSettings from "@/pages/marketer/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -89,12 +96,19 @@ const App = () => (
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 
-            {/* Placeholder for marketer & customer dashboards */}
+            {/* Marketer routes */}
             <Route path="/marketer" element={
               <ProtectedRoute allowedRoles={["marketer"]}>
-                <div className="flex min-h-screen items-center justify-center"><h1 className="text-2xl font-bold">דשבורד משווק - בקרוב</h1></div>
+                <MarketerLayout />
               </ProtectedRoute>
-            } />
+            }>
+              <Route index element={<MarketerDashboard />} />
+              <Route path="leads" element={<MarketerLeads />} />
+              <Route path="tasks" element={<MarketerTasks />} />
+              <Route path="customers" element={<MarketerCustomers />} />
+              <Route path="commissions" element={<MarketerCommissions />} />
+              <Route path="settings" element={<MarketerSettings />} />
+            </Route>
             <Route path="/dashboard" element={
               <ProtectedRoute allowedRoles={["customer"]}>
                 <div className="flex min-h-screen items-center justify-center"><h1 className="text-2xl font-bold">דשבורד לקוח - בקרוב</h1></div>
