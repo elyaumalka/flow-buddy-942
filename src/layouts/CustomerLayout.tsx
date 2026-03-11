@@ -16,22 +16,22 @@ export default function CustomerLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <CustomerSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 flex items-center justify-between border-b bg-card px-6 sticky top-0 z-10">
+          <header className="h-16 flex items-center justify-between border-b border-border/50 bg-card/80 backdrop-blur-xl px-6 sticky top-0 z-10">
             <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h2 className="text-lg font-semibold text-foreground">החשבון שלי</h2>
+              <SidebarTrigger className="rounded-xl hover:bg-primary/10 transition-colors" />
+              <h2 className="text-lg font-bold text-foreground">החשבון שלי</h2>
             </div>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="relative">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleSignOut} title="התנתק">
+              <Button variant="ghost" size="icon" onClick={handleSignOut} title="התנתק" className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors">
                 <LogOut className="h-5 w-5" />
               </Button>
-              <div className="h-9 w-9 rounded-full bg-chart-1 flex items-center justify-center text-primary-foreground font-semibold text-sm">
+              <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-glow-sm">
                 {user?.user_metadata?.full_name?.slice(0, 2) || "לק"}
               </div>
             </div>
