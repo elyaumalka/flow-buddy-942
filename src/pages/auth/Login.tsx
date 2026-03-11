@@ -6,12 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, LogIn } from "lucide-react";
+import { Mail, Lock, LogIn, Shield, Users, User } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+
+const DEMO_ACCOUNTS = [
+  { label: "התחבר כמנהל", role: "admin", icon: Shield, email: "admin@demo.com", className: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+  { label: "התחבר כמשווק", role: "marketer", icon: Users, email: "marketer@demo.com", className: "bg-chart-2/10 text-chart-2 border-chart-2/20 hover:bg-chart-2/20" },
+  { label: "התחבר כלקוח", role: "customer", icon: User, email: "customer@demo.com", className: "bg-chart-3/10 text-chart-3 border-chart-3/20 hover:bg-chart-3/20" },
+] as const;
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -24,10 +32,61 @@ export default function Login() {
     if (error) {
       toast({ title: "שגיאת התחברות", description: error.message, variant: "destructive" });
     } else {
-      // Role-based redirect will happen in App.tsx
       navigate("/");
     }
     setLoading(false);
+  };
+
+  const handleDemoLogin = async (role: string) => {
+    setDemoLoading(role);
+    const demoEmail = `demo-${role}@tizrim.app`;
+    const demoPassword = "demo123456";
+
+    // Try to sign in first
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: demoEmail,
+      password: demoPassword,
+    });
+
+    if (signInError) {
+      // If user doesn't exist, sign up
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: demoEmail,
+        password: demoPassword,
+        options: {
+          data: {
+            full_name: role === "admin" ? "מנהל דמו" : role === "marketer" ? "משווק דמו" : "לקוח דמו",
+            role: role,
+          },
+        },
+      });
+
+      if (signUpError) {
+        toast({ title: "שגיאה", description: signUpError.message, variant: "destructive" });
+        setDemoLoading(null);
+        return;
+      }
+
+      // Try signing in again after signup
+      const { error: retryError } = await supabase.auth.signInWithPassword({
+        email: demoEmail,
+        password: demoPassword,
+      });
+
+      if (retryError) {
+        toast({
+          title: "החשבון נוצר",
+          description: "יש לאשר את המייל לפני ההתחברות, או הפעל אישור אוטומטי",
+          variant: "destructive",
+        });
+        setDemoLoading(null);
+        return;
+      }
+    }
+
+    toast({ title: `מחובר כ${role === "admin" ? "מנהל" : role === "marketer" ? "משווק" : "לקוח"}` });
+    navigate("/");
+    setDemoLoading(null);
   };
 
   return (
@@ -40,7 +99,34 @@ export default function Login() {
           <CardTitle className="text-2xl">התחברות</CardTitle>
           <CardDescription>היכנס לחשבון שלך כדי להמשיך</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-5">
+          {/* Demo quick access */}
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-center text-muted-foreground">כניסה מהירה לדמו</p>
+            <div className="grid grid-cols-3 gap-2">
+              {DEMO_ACCOUNTS.map((demo) => (
+                <Button
+                  key={demo.role}
+                  variant="outline"
+                  className={`flex flex-col items-center gap-1.5 h-auto py-3 border ${demo.className} transition-colors`}
+                  onClick={() => handleDemoLogin(demo.role)}
+                  disabled={!!demoLoading}
+                >
+                  <demo.icon className="h-5 w-5" />
+                  <span className="text-xs font-medium leading-tight">
+                    {demoLoading === demo.role ? "מתחבר..." : demo.label}
+                  </span>
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Separator className="flex-1" />
+            <span className="text-xs text-muted-foreground">או התחבר עם מייל</span>
+            <Separator className="flex-1" />
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">כתובת מייל</Label>
@@ -84,7 +170,7 @@ export default function Login() {
               {loading ? "מתחבר..." : "התחבר"}
             </Button>
           </form>
-          <p className="text-center text-sm text-muted-foreground mt-4">
+          <p className="text-center text-sm text-muted-foreground">
             אין לך חשבון?{" "}
             <Link to="/signup" className="text-primary hover:underline font-medium">
               הרשמה
