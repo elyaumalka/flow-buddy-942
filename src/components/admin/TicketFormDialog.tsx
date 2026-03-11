@@ -5,89 +5,61 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { HeadphonesIcon, Save } from "lucide-react";
 
 export interface TicketData {
-  id: string;
-  customer: string;
-  subject: string;
-  openDate: string;
-  status: string;
-  priority: string;
-  description?: string;
+  id: string; customer: string; subject: string;
+  openDate: string; status: string; priority: string; description?: string;
 }
 
 const emptyTicket: TicketData = { id: "", customer: "", subject: "", openDate: new Date().toLocaleDateString("he-IL"), status: "חדש", priority: "רגיל", description: "" };
 
 interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialData?: TicketData | null;
-  onSave: (data: TicketData) => void;
+  open: boolean; onOpenChange: (open: boolean) => void;
+  initialData?: TicketData | null; onSave: (data: TicketData) => void;
 }
 
 export function TicketFormDialog({ open, onOpenChange, initialData, onSave }: Props) {
   const [form, setForm] = useState<TicketData>(emptyTicket);
   const isEdit = !!initialData;
-
-  useEffect(() => {
-    setForm(initialData || emptyTicket);
-  }, [initialData, open]);
-
+  useEffect(() => { setForm(initialData || emptyTicket); }, [initialData, open]);
   const set = (key: keyof TicketData, value: string) => setForm((p) => ({ ...p, [key]: value }));
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(form);
-    onOpenChange(false);
-  };
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form); onOpenChange(false); };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg" dir="rtl">
+      <DialogContent className="sm:max-w-lg rounded-2xl border-border/50 shadow-2xl" dir="rtl">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "עריכת פנייה" : "פנייה חדשה"}</DialogTitle>
+          <DialogTitle className="text-xl font-extrabold flex items-center gap-2">
+            <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
+              <HeadphonesIcon className="h-4 w-4 text-primary-foreground" />
+            </div>
+            {isEdit ? "עריכת פנייה" : "פנייה חדשה"}
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2"><Label className="font-semibold text-xs">שם לקוח</Label><Input value={form.customer} onChange={(e) => set("customer", e.target.value)} required className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">נושא</Label><Input value={form.subject} onChange={(e) => set("subject", e.target.value)} required className="rounded-xl" /></div>
             <div className="space-y-2">
-              <Label>שם לקוח</Label>
-              <Input value={form.customer} onChange={(e) => set("customer", e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label>נושא</Label>
-              <Input value={form.subject} onChange={(e) => set("subject", e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label>דחיפות</Label>
+              <Label className="font-semibold text-xs">דחיפות</Label>
               <Select value={form.priority} onValueChange={(v) => set("priority", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="דחוף">דחוף</SelectItem>
-                  <SelectItem value="רגיל">רגיל</SelectItem>
-                  <SelectItem value="נמוך">נמוך</SelectItem>
-                </SelectContent>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent className="rounded-xl"><SelectItem value="דחוף">דחוף</SelectItem><SelectItem value="רגיל">רגיל</SelectItem><SelectItem value="נמוך">נמוך</SelectItem></SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>סטטוס</Label>
+              <Label className="font-semibold text-xs">סטטוס</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="חדש">חדש</SelectItem>
-                  <SelectItem value="בטיפול">בטיפול</SelectItem>
-                  <SelectItem value="ממתין">ממתין</SelectItem>
-                  <SelectItem value="הושלם">הושלם</SelectItem>
-                </SelectContent>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent className="rounded-xl"><SelectItem value="חדש">חדש</SelectItem><SelectItem value="בטיפול">בטיפול</SelectItem><SelectItem value="ממתין">ממתין</SelectItem><SelectItem value="הושלם">הושלם</SelectItem></SelectContent>
               </Select>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>תיאור</Label>
-            <Textarea value={form.description || ""} onChange={(e) => set("description", e.target.value)} rows={3} />
-          </div>
-          <div className="flex gap-2 justify-end pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>ביטול</Button>
-            <Button type="submit">{isEdit ? "עדכן" : "הוסף"}</Button>
+          <div className="space-y-2"><Label className="font-semibold text-xs">תיאור</Label><Textarea value={form.description || ""} onChange={(e) => set("description", e.target.value)} rows={3} className="rounded-xl" /></div>
+          <div className="flex gap-2 justify-end pt-3 border-t border-border/50">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">ביטול</Button>
+            <Button type="submit" className="rounded-xl gradient-primary border-0 shadow-glow-sm hover:shadow-glow transition-shadow gap-1.5"><Save className="h-4 w-4" />{isEdit ? "עדכן" : "הוסף"}</Button>
           </div>
         </form>
       </DialogContent>
