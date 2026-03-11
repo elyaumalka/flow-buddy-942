@@ -26,6 +26,7 @@ export default function CustomerLayout() {
               <h2 className="text-lg font-bold text-foreground">החשבון שלי</h2>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell className="h-5 w-5" />
               </Button>

@@ -29,6 +29,7 @@ export default function AdminLayout() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-0.5 -left-0.5 h-4.5 w-4.5 rounded-full gradient-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-glow-sm">3</span>
