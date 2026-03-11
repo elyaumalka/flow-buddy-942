@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { MarketerSidebar } from "@/components/marketer/MarketerSidebar";
 import { Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function MarketerLayout() {
@@ -25,6 +26,7 @@ export default function MarketerLayout() {
               <h2 className="text-lg font-bold text-foreground">פאנל משווק</h2>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell className="h-5 w-5" />
               </Button>

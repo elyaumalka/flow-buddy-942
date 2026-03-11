@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
@@ -63,9 +64,10 @@ function RoleRedirect() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
       <BrowserRouter>
         <AuthProvider>
           <Routes>
@@ -136,7 +138,8 @@ const App = () => (
           </Routes>
         </AuthProvider>
       </BrowserRouter>
-    </TooltipProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

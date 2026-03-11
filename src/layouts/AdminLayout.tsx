@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -28,6 +29,7 @@ export default function AdminLayout() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-0.5 -left-0.5 h-4.5 w-4.5 rounded-full gradient-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-glow-sm">3</span>
