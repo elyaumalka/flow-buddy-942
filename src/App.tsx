@@ -33,6 +33,14 @@ import MarketerTasks from "@/pages/marketer/Tasks";
 import MarketerCustomers from "@/pages/marketer/Customers";
 import MarketerCommissions from "@/pages/marketer/Commissions";
 import MarketerSettings from "@/pages/marketer/Settings";
+import CustomerLayout from "@/layouts/CustomerLayout";
+import CustomerDashboard from "@/pages/customer/Dashboard";
+import CustomerIncome from "@/pages/customer/Income";
+import CustomerExpenses from "@/pages/customer/Expenses";
+import CustomerGoals from "@/pages/customer/Goals";
+import CustomerStatistics from "@/pages/customer/Statistics";
+import CustomerTithes from "@/pages/customer/Tithes";
+import CustomerSettings from "@/pages/customer/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
