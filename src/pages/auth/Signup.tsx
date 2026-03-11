@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, UserPlus } from "lucide-react";
+import logo from "@/assets/logo.jpg";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -19,35 +20,24 @@ export default function Signup() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: window.location.origin,
-      },
+      email, password,
+      options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin },
     });
-
     if (error) {
       toast({ title: "שגיאת הרשמה", description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "ההרשמה הצליחה!",
-        description: "נשלח אליך מייל לאימות. בדוק את תיבת הדואר שלך.",
-      });
+      toast({ title: "ההרשמה הצליחה!", description: "נשלח אליך מייל לאימות. בדוק את תיבת הדואר שלך." });
       navigate("/login");
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary/30 p-4">
-      <Card className="w-full max-w-md animate-fade-in shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(209,61%,12%)] via-[hsl(197,100%,20%)] to-[hsl(170,80%,30%)] p-4">
+      <Card className="w-full max-w-md animate-fade-in shadow-2xl border-0">
         <CardHeader className="text-center space-y-3">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-2xl">₪</span>
-          </div>
+          <img src={logo} alt="Phone-Tech פון-טק" className="mx-auto h-20 w-auto object-contain" />
           <CardTitle className="text-2xl">הרשמה</CardTitle>
           <CardDescription>צור חשבון חדש במערכת</CardDescription>
         </CardHeader>
@@ -57,48 +47,21 @@ export default function Signup() {
               <Label htmlFor="fullName">שם מלא</Label>
               <div className="relative">
                 <User className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="ישראל ישראלי"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="pr-10"
-                  required
-                />
+                <Input id="fullName" type="text" placeholder="ישראל ישראלי" value={fullName} onChange={(e) => setFullName(e.target.value)} className="pr-10" required />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">כתובת מייל</Label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pr-10"
-                  required
-                  dir="ltr"
-                />
+                <Input id="email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pr-10" required dir="ltr" />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">סיסמה</Label>
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="לפחות 6 תווים"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
-                  required
-                  minLength={6}
-                  dir="ltr"
-                />
+                <Input id="password" type="password" placeholder="לפחות 6 תווים" value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" required minLength={6} dir="ltr" />
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
@@ -108,9 +71,7 @@ export default function Signup() {
           </form>
           <p className="text-center text-sm text-muted-foreground mt-4">
             כבר יש לך חשבון?{" "}
-            <Link to="/login" className="text-primary hover:underline font-medium">
-              התחבר
-            </Link>
+            <Link to="/login" className="text-primary hover:underline font-medium">התחבר</Link>
           </p>
         </CardContent>
       </Card>

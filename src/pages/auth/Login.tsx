@@ -8,11 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, LogIn, Shield, Users, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import logo from "@/assets/logo.jpg";
 
 const DEMO_ACCOUNTS = [
-  { label: "התחבר כמנהל", role: "admin", icon: Shield, email: "admin@demo.com", className: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
-  { label: "התחבר כמשווק", role: "marketer", icon: Users, email: "marketer@demo.com", className: "bg-chart-2/10 text-chart-2 border-chart-2/20 hover:bg-chart-2/20" },
-  { label: "התחבר כלקוח", role: "customer", icon: User, email: "customer@demo.com", className: "bg-chart-3/10 text-chart-3 border-chart-3/20 hover:bg-chart-3/20" },
+  { label: "התחבר כמנהל", role: "admin", icon: Shield, className: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+  { label: "התחבר כמשווק", role: "marketer", icon: Users, className: "bg-accent/10 text-accent border-accent/20 hover:bg-accent/20" },
+  { label: "התחבר כלקוח", role: "customer", icon: User, className: "bg-chart-2/10 text-chart-2 border-chart-2/20 hover:bg-chart-2/20" },
 ] as const;
 
 export default function Login() {
@@ -26,9 +27,7 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-
     if (error) {
       toast({ title: "שגיאת התחברות", description: error.message, variant: "destructive" });
     } else {
@@ -42,23 +41,13 @@ export default function Login() {
     const demoEmail = `demo-${role}@tizrim.app`;
     const demoPassword = "demo123456";
 
-    // Try to sign in first
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: demoEmail,
-      password: demoPassword,
-    });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email: demoEmail, password: demoPassword });
 
     if (signInError) {
-      // If user doesn't exist, sign up
       const { error: signUpError } = await supabase.auth.signUp({
         email: demoEmail,
         password: demoPassword,
-        options: {
-          data: {
-            full_name: role === "admin" ? "מנהל דמו" : role === "marketer" ? "משווק דמו" : "לקוח דמו",
-            role: role,
-          },
-        },
+        options: { data: { full_name: role === "admin" ? "מנהל דמו" : role === "marketer" ? "משווק דמו" : "לקוח דמו", role } },
       });
 
       if (signUpError) {
@@ -67,18 +56,9 @@ export default function Login() {
         return;
       }
 
-      // Try signing in again after signup
-      const { error: retryError } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPassword,
-      });
-
+      const { error: retryError } = await supabase.auth.signInWithPassword({ email: demoEmail, password: demoPassword });
       if (retryError) {
-        toast({
-          title: "החשבון נוצר",
-          description: "יש לאשר את המייל לפני ההתחברות, או הפעל אישור אוטומטי",
-          variant: "destructive",
-        });
+        toast({ title: "החשבון נוצר", description: "יש לאשר את המייל לפני ההתחברות", variant: "destructive" });
         setDemoLoading(null);
         return;
       }
@@ -90,17 +70,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary/30 p-4">
-      <Card className="w-full max-w-md animate-fade-in shadow-lg">
-        <CardHeader className="text-center space-y-3">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-2xl">₪</span>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(209,61%,12%)] via-[hsl(197,100%,20%)] to-[hsl(170,80%,30%)] p-4">
+      <Card className="w-full max-w-md animate-fade-in shadow-2xl border-0">
+        <CardHeader className="text-center space-y-3 pb-4">
+          <img src={logo} alt="Phone-Tech פון-טק" className="mx-auto h-20 w-auto object-contain" />
           <CardTitle className="text-2xl">התחברות</CardTitle>
           <CardDescription>היכנס לחשבון שלך כדי להמשיך</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          {/* Demo quick access */}
           <div className="space-y-3">
             <p className="text-sm font-medium text-center text-muted-foreground">כניסה מהירה לדמו</p>
             <div className="grid grid-cols-3 gap-2">
@@ -132,38 +109,18 @@ export default function Login() {
               <Label htmlFor="email">כתובת מייל</Label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pr-10"
-                  required
-                  dir="ltr"
-                />
+                <Input id="email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pr-10" required dir="ltr" />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">סיסמה</Label>
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
-                  required
-                  dir="ltr"
-                />
+                <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" required dir="ltr" />
               </div>
             </div>
             <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                שכחתי סיסמה
-              </Link>
+              <Link to="/forgot-password" className="text-sm text-primary hover:underline">שכחתי סיסמה</Link>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               <LogIn className="h-4 w-4 ml-2" />
@@ -172,9 +129,7 @@ export default function Login() {
           </form>
           <p className="text-center text-sm text-muted-foreground">
             אין לך חשבון?{" "}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
-              הרשמה
-            </Link>
+            <Link to="/signup" className="text-primary hover:underline font-medium">הרשמה</Link>
           </p>
         </CardContent>
       </Card>

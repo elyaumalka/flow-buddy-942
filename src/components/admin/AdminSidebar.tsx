@@ -1,33 +1,16 @@
 import {
-  LayoutDashboard,
-  Users,
-  Handshake,
-  Megaphone,
-  UserCheck,
-  CreditCard,
-  AlertTriangle,
-  Percent,
-  FileText,
-  BarChart3,
-  CheckSquare,
-  CalendarDays,
-  HeadphonesIcon,
-  Settings,
+  LayoutDashboard, Users, Handshake, Megaphone, UserCheck,
+  CreditCard, AlertTriangle, Percent, FileText, BarChart3,
+  CheckSquare, CalendarDays, HeadphonesIcon, Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+  SidebarHeader, useSidebar,
 } from "@/components/ui/sidebar";
+import logo from "@/assets/logo.jpg";
 
 const menuItems = [
   { title: "דשבורד", url: "/admin", icon: LayoutDashboard },
@@ -58,43 +41,31 @@ export function AdminSidebar() {
 
   return (
     <Sidebar collapsible="icon" side="right">
-      <SidebarHeader className="p-4 border-b">
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
         {!collapsed && (
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">₪</span>
-            </div>
+            <img src={logo} alt="Phone-Tech" className="h-10 w-auto object-contain rounded-lg" />
             <div>
-              <h1 className="font-bold text-foreground">תזרים+</h1>
-              <p className="text-xs text-muted-foreground">ניהול הוצאות והכנסות</p>
+              <h1 className="font-bold text-sidebar-foreground text-sm">Phone-Tech</h1>
+              <p className="text-xs text-sidebar-foreground/60">ניהול מערכת</p>
             </div>
           </div>
         )}
         {collapsed && (
           <div className="flex justify-center">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">₪</span>
-            </div>
+            <img src={logo} alt="PT" className="h-8 w-8 object-cover rounded-lg" />
           </div>
         )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>ניהול</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/50">ניהול</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/admin"}
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                    <NavLink to={item.url} end={item.url === "/admin"} activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
