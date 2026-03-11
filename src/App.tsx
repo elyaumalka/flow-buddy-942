@@ -33,6 +33,14 @@ import MarketerTasks from "@/pages/marketer/Tasks";
 import MarketerCustomers from "@/pages/marketer/Customers";
 import MarketerCommissions from "@/pages/marketer/Commissions";
 import MarketerSettings from "@/pages/marketer/Settings";
+import CustomerLayout from "@/layouts/CustomerLayout";
+import CustomerDashboard from "@/pages/customer/Dashboard";
+import CustomerIncome from "@/pages/customer/Income";
+import CustomerExpenses from "@/pages/customer/Expenses";
+import CustomerGoals from "@/pages/customer/Goals";
+import CustomerStatistics from "@/pages/customer/Statistics";
+import CustomerTithes from "@/pages/customer/Tithes";
+import CustomerSettings from "@/pages/customer/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -109,11 +117,20 @@ const App = () => (
               <Route path="commissions" element={<MarketerCommissions />} />
               <Route path="settings" element={<MarketerSettings />} />
             </Route>
+            {/* Customer routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute allowedRoles={["customer"]}>
-                <div className="flex min-h-screen items-center justify-center"><h1 className="text-2xl font-bold">דשבורד לקוח - בקרוב</h1></div>
+                <CustomerLayout />
               </ProtectedRoute>
-            } />
+            }>
+              <Route index element={<CustomerDashboard />} />
+              <Route path="income" element={<CustomerIncome />} />
+              <Route path="expenses" element={<CustomerExpenses />} />
+              <Route path="goals" element={<CustomerGoals />} />
+              <Route path="statistics" element={<CustomerStatistics />} />
+              <Route path="tithes" element={<CustomerTithes />} />
+              <Route path="settings" element={<CustomerSettings />} />
+            </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>
