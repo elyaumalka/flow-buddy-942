@@ -30,8 +30,12 @@ export default function AdminLayout() {
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -left-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">3</span>
               </Button>
+              <Button variant="ghost" size="icon" onClick={handleSignOut} title="התנתק">
+                <LogOut className="h-5 w-5" />
+              </Button>
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
-                מנ
+                {user?.user_metadata?.full_name?.slice(0, 2) || "מנ"}
+              </div>
               </div>
             </div>
           </header>
