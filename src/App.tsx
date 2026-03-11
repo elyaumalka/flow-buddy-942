@@ -117,11 +117,20 @@ const App = () => (
               <Route path="commissions" element={<MarketerCommissions />} />
               <Route path="settings" element={<MarketerSettings />} />
             </Route>
+            {/* Customer routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute allowedRoles={["customer"]}>
-                <div className="flex min-h-screen items-center justify-center"><h1 className="text-2xl font-bold">דשבורד לקוח - בקרוב</h1></div>
+                <CustomerLayout />
               </ProtectedRoute>
-            } />
+            }>
+              <Route index element={<CustomerDashboard />} />
+              <Route path="income" element={<CustomerIncome />} />
+              <Route path="expenses" element={<CustomerExpenses />} />
+              <Route path="goals" element={<CustomerGoals />} />
+              <Route path="statistics" element={<CustomerStatistics />} />
+              <Route path="tithes" element={<CustomerTithes />} />
+              <Route path="settings" element={<CustomerSettings />} />
+            </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>
