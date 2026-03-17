@@ -46,6 +46,9 @@ export default function Login() {
     setEmail(demoEmail);
     setPassword(demoPassword);
 
+    // Clear any stale session first
+    await supabase.auth.signOut();
+
     // Try sign in first
     const { error: signInError } = await supabase.auth.signInWithPassword({ email: demoEmail, password: demoPassword });
 
