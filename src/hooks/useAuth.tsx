@@ -27,40 +27,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .single();
-    return (data?.role as AppRole) || null;
+    const { data } = await supabase.rpc("get_user_role", { _user_id: userId });
+    return (data as AppRole | null) ?? null;
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          const userRole = await fetchRole(session.user.id);
-          setRole(userRole);
-        } else {
-          setRole(null);
-        }
+    let mounted = true;
+
+    const applySession = async (nextSession: Session | null) => {
+      if (!mounted) return;
+
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+
+      if (nextSession?.user) {
+        const userRole = await fetchRole(nextSession.user.id);
+        if (!mounted) return;
+        setRole(userRole);
+      } else {
+        setRole(null);
+      }
+
+      if (mounted) {
         setLoading(false);
       }
-    );
+    };
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const userRole = await fetchRole(session.user.id);
-        setRole(userRole);
-      }
-      setLoading(false);
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      void applySession(session);
     });
 
-    return () => subscription.unsubscribe();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      void applySession(nextSession);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
