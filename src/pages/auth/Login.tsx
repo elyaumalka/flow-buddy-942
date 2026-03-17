@@ -27,6 +27,7 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    await supabase.auth.signOut();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast({ title: "שגיאת התחברות", description: error.message, variant: "destructive" });
