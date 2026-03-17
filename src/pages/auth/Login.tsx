@@ -40,14 +40,21 @@ export default function Login() {
     setDemoLoading(role);
     const demoEmail = `demo-${role}@tizrim.app`;
     const demoPassword = "demo123456";
+    const fullName = role === "admin" ? "מנהל דמו" : role === "marketer" ? "משווק דמו" : "לקוח דמו";
 
+    // Fill the form fields visually
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+
+    // Try sign in first
     const { error: signInError } = await supabase.auth.signInWithPassword({ email: demoEmail, password: demoPassword });
 
     if (signInError) {
+      // Account doesn't exist - create it (auto-confirm is enabled)
       const { error: signUpError } = await supabase.auth.signUp({
         email: demoEmail,
         password: demoPassword,
-        options: { data: { full_name: role === "admin" ? "מנהל דמו" : role === "marketer" ? "משווק דמו" : "לקוח דמו", role } },
+        options: { data: { full_name: fullName, role } },
       });
 
       if (signUpError) {
@@ -56,15 +63,16 @@ export default function Login() {
         return;
       }
 
+      // Sign in after creation
       const { error: retryError } = await supabase.auth.signInWithPassword({ email: demoEmail, password: demoPassword });
       if (retryError) {
-        toast({ title: "החשבון נוצר", description: "יש לאשר את המייל לפני ההתחברות", variant: "destructive" });
+        toast({ title: "שגיאה", description: retryError.message, variant: "destructive" });
         setDemoLoading(null);
         return;
       }
     }
 
-    toast({ title: `מחובר כ${role === "admin" ? "מנהל" : role === "marketer" ? "משווק" : "לקוח"}` });
+    toast({ title: `מחובר כ${fullName}` });
     navigate("/");
     setDemoLoading(null);
   };
