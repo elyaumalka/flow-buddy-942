@@ -44,20 +44,38 @@ interface DataTableProps<T> {
 }
 
 export function DataTable<T extends Record<string, any>>({
-  data, columns, title, onAdd, addLabel = "הוספה", onExport, searchPlaceholder = "חיפוש...", onRowClick, onBulkEdit, onBulkDelete, extraBulkActions, extraRowActions,
+  data, columns, title, onAdd, addLabel = "הוספה", onExport, searchPlaceholder = "חיפוש...", onRowClick, onBulkEdit, onBulkDelete, extraBulkActions, extraRowActions, filters,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
 
   const selectable = !!(onBulkEdit || onBulkDelete);
 
-  const filtered = useMemo(() => data.filter((item) =>
-    columns.some((col) => {
-      const val = item[col.key];
+  const filterOptions = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    (filters ?? []).forEach((f) => {
+      if (f.options) { map[f.key] = f.options; return; }
+      const set = new Set<string>();
+      data.forEach((it: any) => { const v = it[f.key]; if (v != null && v !== "") set.add(String(v)); });
+      map[f.key] = Array.from(set).sort();
+    });
+    return map;
+  }, [filters, data]);
+
+  const filtered = useMemo(() => data.filter((item) => {
+    for (const [k, v] of Object.entries(activeFilters)) {
+      if (v && String((item as any)[k] ?? "") !== v) return false;
+    }
+    if (!search) return true;
+    return columns.some((col) => {
+      const val = (item as any)[col.key];
       return val && String(val).toLowerCase().includes(search.toLowerCase());
-    })
-  ), [data, columns, search]);
+    });
+  }), [data, columns, search, activeFilters]);
+
+  const activeFilterCount = Object.values(activeFilters).filter(Boolean).length;
 
   const allFilteredIds = filtered.map((i: any) => i.id).filter(Boolean);
   const allSelected = allFilteredIds.length > 0 && allFilteredIds.every((id) => selected.has(id));
