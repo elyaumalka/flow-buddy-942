@@ -113,6 +113,48 @@ export function DataTable<T extends Record<string, any>>({
               className="pr-9 w-full sm:w-64 rounded-xl border-border/60 focus:border-primary/50 focus:ring-primary/20 transition-all"
             />
           </div>
+          {filters && filters.length > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-xl hover-lift border-border/60 relative">
+                  <Filter className="h-4 w-4 ml-1" />
+                  סינון
+                  {activeFilterCount > 0 && (
+                    <span className="mr-1 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent dir="rtl" className="w-72 rounded-2xl space-y-3" align="end">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-sm">סינון מתקדם</h4>
+                  {activeFilterCount > 0 && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs rounded-lg" onClick={() => setActiveFilters({})}>
+                      <X className="h-3 w-3 ml-1" /> נקה
+                    </Button>
+                  )}
+                </div>
+                {filters.map((f) => (
+                  <div key={f.key} className="space-y-1.5">
+                    <Label className="text-xs font-semibold">{f.label}</Label>
+                    <Select
+                      value={activeFilters[f.key] ?? "__all__"}
+                      onValueChange={(v) => setActiveFilters((p) => ({ ...p, [f.key]: v === "__all__" ? "" : v }))}
+                    >
+                      <SelectTrigger className="rounded-xl h-9"><SelectValue placeholder="הכל" /></SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="__all__">הכל</SelectItem>
+                        {filterOptions[f.key]?.map((o) => (
+                          <SelectItem key={o} value={o}>{o}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </PopoverContent>
+            </Popover>
+          )}
           {onExport && (
             <Button variant="outline" size="sm" className="rounded-xl hover-lift border-border/60" onClick={onExport}>
               <Download className="h-4 w-4 ml-1" />
