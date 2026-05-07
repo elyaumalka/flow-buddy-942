@@ -99,7 +99,7 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {selectable && selectedIds.length > 0 && (
-        <div className="px-5 py-3 border-b border-primary/20 bg-primary/[0.06] flex items-center justify-between gap-3 animate-slide-down">
+        <div className="px-5 py-3 border-b border-primary/20 bg-primary/[0.06] flex items-center justify-between gap-3 animate-fade-in">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-primary">{selectedIds.length} נבחרו</span>
             <Button variant="ghost" size="sm" onClick={clearSel} className="h-7 rounded-lg text-xs">
