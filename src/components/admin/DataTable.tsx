@@ -5,12 +5,21 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, Plus, Download, Pencil, Trash2, X, LucideIcon } from "lucide-react";
+import { Search, Plus, Download, Pencil, Trash2, X, LucideIcon, Filter } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+export interface FilterDef {
+  key: string;
+  label: string;
+  options?: string[]; // if omitted, derived from data
+}
 
 interface Column<T> {
   key: string;
@@ -31,6 +40,7 @@ interface DataTableProps<T> {
   onBulkDelete?: (ids: string[]) => Promise<void> | void;
   extraBulkActions?: Array<{ label: string; icon?: LucideIcon; onClick: (ids: string[]) => void; variant?: "default" | "outline" | "secondary" }>;
   extraRowActions?: Array<{ label: string; icon: LucideIcon; onClick: (item: any) => void }>;
+  filters?: FilterDef[];
 }
 
 export function DataTable<T extends Record<string, any>>({
