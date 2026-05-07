@@ -5,12 +5,21 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, Plus, Download, Pencil, Trash2, X, LucideIcon } from "lucide-react";
+import { Search, Plus, Download, Pencil, Trash2, X, LucideIcon, Filter } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+export interface FilterDef {
+  key: string;
+  label: string;
+  options?: string[]; // if omitted, derived from data
+}
 
 interface Column<T> {
   key: string;
@@ -31,23 +40,42 @@ interface DataTableProps<T> {
   onBulkDelete?: (ids: string[]) => Promise<void> | void;
   extraBulkActions?: Array<{ label: string; icon?: LucideIcon; onClick: (ids: string[]) => void; variant?: "default" | "outline" | "secondary" }>;
   extraRowActions?: Array<{ label: string; icon: LucideIcon; onClick: (item: any) => void }>;
+  filters?: FilterDef[];
 }
 
 export function DataTable<T extends Record<string, any>>({
-  data, columns, title, onAdd, addLabel = "הוספה", onExport, searchPlaceholder = "חיפוש...", onRowClick, onBulkEdit, onBulkDelete, extraBulkActions, extraRowActions,
+  data, columns, title, onAdd, addLabel = "הוספה", onExport, searchPlaceholder = "חיפוש...", onRowClick, onBulkEdit, onBulkDelete, extraBulkActions, extraRowActions, filters,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
 
   const selectable = !!(onBulkEdit || onBulkDelete);
 
-  const filtered = useMemo(() => data.filter((item) =>
-    columns.some((col) => {
-      const val = item[col.key];
+  const filterOptions = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    (filters ?? []).forEach((f) => {
+      if (f.options) { map[f.key] = f.options; return; }
+      const set = new Set<string>();
+      data.forEach((it: any) => { const v = it[f.key]; if (v != null && v !== "") set.add(String(v)); });
+      map[f.key] = Array.from(set).sort();
+    });
+    return map;
+  }, [filters, data]);
+
+  const filtered = useMemo(() => data.filter((item) => {
+    for (const [k, v] of Object.entries(activeFilters)) {
+      if (v && String((item as any)[k] ?? "") !== v) return false;
+    }
+    if (!search) return true;
+    return columns.some((col) => {
+      const val = (item as any)[col.key];
       return val && String(val).toLowerCase().includes(search.toLowerCase());
-    })
-  ), [data, columns, search]);
+    });
+  }), [data, columns, search, activeFilters]);
+
+  const activeFilterCount = Object.values(activeFilters).filter(Boolean).length;
 
   const allFilteredIds = filtered.map((i: any) => i.id).filter(Boolean);
   const allSelected = allFilteredIds.length > 0 && allFilteredIds.every((id) => selected.has(id));
@@ -85,6 +113,48 @@ export function DataTable<T extends Record<string, any>>({
               className="pr-9 w-full sm:w-64 rounded-xl border-border/60 focus:border-primary/50 focus:ring-primary/20 transition-all"
             />
           </div>
+          {filters && filters.length > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-xl hover-lift border-border/60 relative">
+                  <Filter className="h-4 w-4 ml-1" />
+                  סינון
+                  {activeFilterCount > 0 && (
+                    <span className="mr-1 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent dir="rtl" className="w-72 rounded-2xl space-y-3" align="end">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-sm">סינון מתקדם</h4>
+                  {activeFilterCount > 0 && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs rounded-lg" onClick={() => setActiveFilters({})}>
+                      <X className="h-3 w-3 ml-1" /> נקה
+                    </Button>
+                  )}
+                </div>
+                {filters.map((f) => (
+                  <div key={f.key} className="space-y-1.5">
+                    <Label className="text-xs font-semibold">{f.label}</Label>
+                    <Select
+                      value={activeFilters[f.key] ?? "__all__"}
+                      onValueChange={(v) => setActiveFilters((p) => ({ ...p, [f.key]: v === "__all__" ? "" : v }))}
+                    >
+                      <SelectTrigger className="rounded-xl h-9"><SelectValue placeholder="הכל" /></SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="__all__">הכל</SelectItem>
+                        {filterOptions[f.key]?.map((o) => (
+                          <SelectItem key={o} value={o}>{o}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </PopoverContent>
+            </Popover>
+          )}
           {onExport && (
             <Button variant="outline" size="sm" className="rounded-xl hover-lift border-border/60" onClick={onExport}>
               <Download className="h-4 w-4 ml-1" />

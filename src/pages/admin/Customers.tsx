@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { CustomerFormDialog, CustomerFormData } from "@/components/admin/CustomerFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,13 @@ const bulkFields: BulkField[] = [
   { key: "modules", label: "מודולים", type: "text" },
   { key: "marketer_name", label: "משווק", type: "text" },
   { key: "subscription", label: "סטטוס מנוי", type: "select", options: ["פעיל", "לא פעיל", "מושהה"] },
+];
+
+const filters: FilterDef[] = [
+  { key: "subscription", label: "סטטוס מנוי", options: ["פעיל", "לא פעיל", "מושהה"] },
+  { key: "community", label: "קהילה" },
+  { key: "marketer_name", label: "משווק" },
+  { key: "modules", label: "מודולים" },
 ];
 
 export default function AdminCustomers() {
@@ -56,7 +64,7 @@ export default function AdminCustomers() {
         <h1 className="text-2xl font-bold text-foreground">ניהול לקוחות</h1>
         <p className="text-muted-foreground">ניהול לקוחות משלמים במערכת</p>
       </div>
-      <DataTable data={data} columns={columns} title="לקוחות" addLabel="לקוח חדש" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <DataTable data={data} columns={columns} title="לקוחות" addLabel="לקוח חדש" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
       <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>
