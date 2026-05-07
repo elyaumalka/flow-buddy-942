@@ -72,6 +72,24 @@ export function useSupabaseTable<T extends Record<string, any>>(
     },
   });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ ids, updates }: { ids: string[]; updates: Partial<T> }) => {
+      const { error } = await supabase.from(table).update(updates as any).in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [table] }),
+    onError: (err: any) => toast({ title: "שגיאה", description: err.message, variant: "destructive" }),
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from(table).delete().in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [table] }),
+    onError: (err: any) => toast({ title: "שגיאה", description: err.message, variant: "destructive" }),
+  });
+
   return {
     data: query.data || [],
     isLoading: query.isLoading,
@@ -80,6 +98,8 @@ export function useSupabaseTable<T extends Record<string, any>>(
     insert: insertMutation.mutateAsync,
     update: updateMutation.mutateAsync,
     remove: deleteMutation.mutateAsync,
+    bulkUpdate: bulkUpdateMutation.mutateAsync,
+    bulkRemove: bulkDeleteMutation.mutateAsync,
     isInserting: insertMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

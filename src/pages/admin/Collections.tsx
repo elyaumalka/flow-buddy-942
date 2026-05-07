@@ -1,11 +1,17 @@
+import { useState } from "react";
 import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { StatCard } from "@/components/admin/StatCard";
+import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
 import { AlertTriangle, Clock, DollarSign } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminCollections() {
-  const { data } = useSupabaseTable("collections");
+  const { toast } = useToast();
+  const { data, bulkUpdate, bulkRemove } = useSupabaseTable("collections");
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkIds, setBulkIds] = useState<string[]>([]);
 
   const totalDebt = data.reduce((sum, c: any) => sum + Number(c.amount || 0), 0);
   const pending = data.filter((c: any) => c.status === "ממתין").length;
@@ -16,6 +22,21 @@ export default function AdminCollections() {
     { key: "amount", header: "סכום", render: (item: any) => `₪${Number(item.amount).toLocaleString()}` },
     { key: "status", header: "סטטוס טיפול", render: (item: any) => <StatusBadge status={item.status} /> },
   ];
+
+  const bulkFields: BulkField[] = [
+    { key: "amount", label: "סכום", type: "number" },
+    { key: "status", label: "סטטוס טיפול", type: "select", options: ["ממתין", "בטיפול", "טופל", "מבוטל"] },
+  ];
+
+  const handleBulkEdit = (ids: string[]) => { setBulkIds(ids); setBulkOpen(true); };
+  const handleBulkSave = async (updates: Record<string, any>) => {
+    await bulkUpdate({ ids: bulkIds, updates });
+    toast({ title: `${bulkIds.length} רשומות עודכנו` });
+  };
+  const handleBulkDelete = async (ids: string[]) => {
+    await bulkRemove(ids);
+    toast({ title: `${ids.length} רשומות נמחקו` });
+  };
 
   return (
     <div className="space-y-6">
@@ -28,7 +49,8 @@ export default function AdminCollections() {
         <StatCard title="ממתינים לטיפול" value={pending} icon={AlertTriangle} iconClassName="bg-chart-3/10 text-chart-3" />
         <StatCard title="סה״כ רשומות" value={data.length} icon={Clock} iconClassName="bg-primary/10 text-primary" />
       </div>
-      <DataTable data={data} columns={columns} title="חיובים שנכשלו" />
+      <DataTable data={data} columns={columns} title="חיובים שנכשלו" onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>
   );
 }

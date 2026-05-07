@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { LeadFormDialog, LeadFormData } from "@/components/admin/LeadFormDialog";
+import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,23 +19,37 @@ const columns = [
   { key: "created_at", header: "תאריך", render: (item: any) => new Date(item.created_at).toLocaleDateString("he-IL") },
 ];
 
+const bulkFields: BulkField[] = [
+  { key: "city", label: "כתובת", type: "text" },
+  { key: "community", label: "קהילה", type: "text" },
+  { key: "status", label: "סטטוס", type: "select", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
+  { key: "source", label: "מקור הגעה", type: "select", options: ["אתר", "טלפון", "הפניה", "פייסבוק"] },
+  { key: "marketer_name", label: "משווק מקושר", type: "text" },
+];
+
 export default function AdminLeads() {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { data, isLoading, insert, update } = useSupabaseTable("leads");
+  const { data, insert, update, bulkUpdate, bulkRemove } = useSupabaseTable("leads");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkIds, setBulkIds] = useState<string[]>([]);
 
   const handleAdd = () => { setEditItem(null); setDialogOpen(true); };
   const handleEdit = (item: any) => { setEditItem(item); setDialogOpen(true); };
   const handleSave = async (formData: LeadFormData, id?: string) => {
-    if (id) {
-      await update({ id, ...formData });
-      toast({ title: "הליד עודכן בהצלחה" });
-    } else {
-      await insert({ ...formData, created_by: user?.id });
-      toast({ title: "ליד חדש נוסף בהצלחה" });
-    }
+    if (id) { await update({ id, ...formData }); toast({ title: "הליד עודכן בהצלחה" }); }
+    else { await insert({ ...formData, created_by: user?.id }); toast({ title: "ליד חדש נוסף בהצלחה" }); }
+  };
+  const handleBulkEdit = (ids: string[]) => { setBulkIds(ids); setBulkOpen(true); };
+  const handleBulkSave = async (updates: Record<string, any>) => {
+    await bulkUpdate({ ids: bulkIds, updates });
+    toast({ title: `${bulkIds.length} לידים עודכנו` });
+  };
+  const handleBulkDelete = async (ids: string[]) => {
+    await bulkRemove(ids);
+    toast({ title: `${ids.length} לידים נמחקו` });
   };
 
   return (
@@ -43,8 +58,9 @@ export default function AdminLeads() {
         <h1 className="text-2xl font-bold text-foreground">ניהול לידים</h1>
         <p className="text-muted-foreground">ניהול וטיפול בלידים שמגיעים למערכת</p>
       </div>
-      <DataTable data={data} columns={columns} title="לידים" addLabel="ליד חדש" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} searchPlaceholder="חיפוש לפי שם, טלפון, מייל..." onRowClick={handleEdit} />
+      <DataTable data={data} columns={columns} title="לידים" addLabel="ליד חדש" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} searchPlaceholder="חיפוש לפי שם, טלפון, מייל..." onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
       <LeadFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
+      <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>
   );
 }
