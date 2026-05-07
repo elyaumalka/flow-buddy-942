@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, Plus, Download, Pencil, Trash2, X } from "lucide-react";
+import { Search, Plus, Download, Pencil, Trash2, X, LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -29,10 +29,12 @@ interface DataTableProps<T> {
   onRowClick?: (item: T, index: number) => void;
   onBulkEdit?: (ids: string[]) => void;
   onBulkDelete?: (ids: string[]) => Promise<void> | void;
+  extraBulkActions?: Array<{ label: string; icon?: LucideIcon; onClick: (ids: string[]) => void; variant?: "default" | "outline" | "secondary" }>;
+  extraRowActions?: Array<{ label: string; icon: LucideIcon; onClick: (item: any) => void }>;
 }
 
 export function DataTable<T extends Record<string, any>>({
-  data, columns, title, onAdd, addLabel = "הוספה", onExport, searchPlaceholder = "חיפוש...", onRowClick, onBulkEdit, onBulkDelete,
+  data, columns, title, onAdd, addLabel = "הוספה", onExport, searchPlaceholder = "חיפוש...", onRowClick, onBulkEdit, onBulkDelete, extraBulkActions, extraRowActions,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -112,6 +114,14 @@ export function DataTable<T extends Record<string, any>>({
                 <Pencil className="h-3.5 w-3.5 ml-1" /> עריכה קבוצתית
               </Button>
             )}
+            {extraBulkActions?.map((a, idx) => {
+              const Icon = a.icon;
+              return (
+                <Button key={idx} size="sm" variant={a.variant ?? "secondary"} onClick={() => { a.onClick(selectedIds); }} className="rounded-xl">
+                  {Icon && <Icon className="h-3.5 w-3.5 ml-1" />} {a.label}
+                </Button>
+              );
+            })}
             {onBulkDelete && (
               <Button size="sm" variant="destructive" onClick={() => setConfirmDelete(true)} className="rounded-xl">
                 <Trash2 className="h-3.5 w-3.5 ml-1" /> מחיקה
@@ -164,14 +174,32 @@ export function DataTable<T extends Record<string, any>>({
                     )}
                     {onRowClick && (
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
-                          onClick={() => onRowClick(item, i)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="עריכה"
+                            className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+                            onClick={() => onRowClick(item, i)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          {extraRowActions?.map((a, idx) => {
+                            const Icon = a.icon;
+                            return (
+                              <Button
+                                key={idx}
+                                variant="ghost"
+                                size="icon"
+                                title={a.label}
+                                className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+                                onClick={(e) => { e.stopPropagation(); a.onClick(item); }}
+                              >
+                                <Icon className="h-3.5 w-3.5" />
+                              </Button>
+                            );
+                          })}
+                        </div>
                       </TableCell>
                     )}
                     {columns.map((col) => (
