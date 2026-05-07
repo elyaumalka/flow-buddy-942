@@ -4,9 +4,14 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { CustomerFormDialog, CustomerFormData } from "@/components/admin/CustomerFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
 import type { FilterDef } from "@/components/admin/DataTable";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Trash2 } from "lucide-react";
 
 const columns = [
   { key: "name", header: "שם" },
@@ -41,6 +46,8 @@ export default function AdminCustomers() {
   const [editItem, setEditItem] = useState<any>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkIds, setBulkIds] = useState<string[]>([]);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
+  const { remove } = useSupabaseTable("customers");
 
   const handleAdd = () => { setEditItem(null); setDialogOpen(true); };
   const handleEdit = (item: any) => { setEditItem(item); setDialogOpen(true); };
@@ -57,6 +64,12 @@ export default function AdminCustomers() {
     await bulkRemove(ids);
     toast({ title: `${ids.length} לקוחות נמחקו` });
   };
+  const confirmDelete = async () => {
+    if (!deleteItem) return;
+    await remove(deleteItem.id);
+    toast({ title: "הלקוח נמחק" });
+    setDeleteItem(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -64,9 +77,40 @@ export default function AdminCustomers() {
         <h1 className="text-2xl font-bold text-foreground">ניהול לקוחות</h1>
         <p className="text-muted-foreground">ניהול לקוחות משלמים במערכת</p>
       </div>
-      <DataTable data={data} columns={columns} title="לקוחות" addLabel="לקוח חדש" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
+      <DataTable
+        data={data}
+        columns={columns}
+        title="לקוחות"
+        addLabel="לקוח חדש"
+        onAdd={handleAdd}
+        onExport={() => toast({ title: "ייצוא" })}
+        onRowClick={handleEdit}
+        onBulkEdit={handleBulkEdit}
+        onBulkDelete={handleBulkDelete}
+        filters={filters}
+        extraRowActions={[
+          { label: "מחיקה", icon: Trash2, onClick: (item) => setDeleteItem(item) },
+        ]}
+      />
       <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
+
+      <AlertDialog open={!!deleteItem} onOpenChange={(o) => !o && setDeleteItem(null)}>
+        <AlertDialogContent dir="rtl" className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>מחיקת לקוח</AlertDialogTitle>
+            <AlertDialogDescription>
+              האם למחוק את הלקוח <b className="text-primary">{deleteItem?.name}</b>? פעולה זו אינה ניתנת לביטול.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">ביטול</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+              מחק
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
