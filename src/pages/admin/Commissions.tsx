@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { StatCard } from "@/components/admin/StatCard";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import { Percent, CheckCircle, Clock } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +21,12 @@ const bulkFields: BulkField[] = [
   { key: "clients_count", label: "כמות לקוחות", type: "number" },
   { key: "month", label: "חודש", type: "text" },
   { key: "status", label: "סטטוס", type: "select", options: ["שולם", "לא שולם", "ממתין"] },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["שולם", "לא שולם", "ממתין"] },
+  { key: "marketer_name", label: "משווק" },
+  { key: "month", label: "חודש" },
 ];
 
 export default function AdminCommissions() {
@@ -53,7 +60,7 @@ export default function AdminCommissions() {
         <StatCard title="שולמו" value={`₪${paid.toLocaleString()}`} icon={CheckCircle} iconClassName="bg-success/10 text-success" />
         <StatCard title="ממתינות" value={`₪${pending.toLocaleString()}`} icon={Clock} iconClassName="bg-chart-3/10 text-chart-3" />
       </div>
-      <DataTable data={data} columns={columns} title="עמלות" onExport={() => toast({ title: "ייצוא" })} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <DataTable data={data} columns={columns} title="עמלות" onExport={() => toast({ title: "ייצוא" })} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>
   );

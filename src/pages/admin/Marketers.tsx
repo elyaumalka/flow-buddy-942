@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { MarketerFormDialog, MarketerFormData } from "@/components/admin/MarketerFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,12 @@ const bulkFields: BulkField[] = [
   { key: "commission", label: "תנאי עמלה", type: "text" },
   { key: "partner_name", label: "שותף מקושר", type: "text" },
   { key: "status", label: "סטטוס", type: "select", options: ["פעיל", "לא פעיל", "מושהה"] },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["פעיל", "לא פעיל", "מושהה"] },
+  { key: "community", label: "קהילה" },
+  { key: "partner_name", label: "שותף מקושר" },
 ];
 
 export default function AdminMarketers() {
@@ -56,7 +63,7 @@ export default function AdminMarketers() {
         <h1 className="text-2xl font-bold text-foreground">ניהול משווקים</h1>
         <p className="text-muted-foreground">ניהול משווקים, קודי קופון ועמלות</p>
       </div>
-      <DataTable data={data} columns={columns} title="משווקים" addLabel="משווק חדש" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <DataTable data={data} columns={columns} title="משווקים" addLabel="משווק חדש" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
       <MarketerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>

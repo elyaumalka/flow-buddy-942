@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { TicketFormDialog, TicketFormData } from "@/components/admin/TicketFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +21,12 @@ const bulkFields: BulkField[] = [
   { key: "subject", label: "נושא", type: "text" },
   { key: "priority", label: "דחיפות", type: "select", options: ["דחוף", "רגיל", "נמוך"] },
   { key: "status", label: "סטטוס", type: "select", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
+  { key: "priority", label: "דחיפות", options: ["דחוף", "רגיל", "נמוך"] },
+  { key: "customer", label: "לקוח" },
 ];
 
 export default function AdminTickets() {
@@ -53,7 +60,7 @@ export default function AdminTickets() {
         <h1 className="text-2xl font-bold text-foreground">פניות ותקלות</h1>
         <p className="text-muted-foreground">ניהול פניות ותקלות לפי לקוח</p>
       </div>
-      <DataTable data={data} columns={columns} title="פניות ותקלות" addLabel="פנייה חדשה" onAdd={handleAdd} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <DataTable data={data} columns={columns} title="פניות ותקלות" addLabel="פנייה חדשה" onAdd={handleAdd} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
       <TicketFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>

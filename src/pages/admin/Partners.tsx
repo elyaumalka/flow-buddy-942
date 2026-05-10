@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { PartnerFormDialog, PartnerFormData } from "@/components/admin/PartnerFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,10 @@ const columns = [
 const bulkFields: BulkField[] = [
   { key: "commission", label: "תנאי עמלה", type: "text" },
   { key: "status", label: "סטטוס", type: "select", options: ["פעיל", "לא פעיל"] },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["פעיל", "לא פעיל"] },
 ];
 
 export default function AdminPartners() {
@@ -51,7 +56,7 @@ export default function AdminPartners() {
         <h1 className="text-2xl font-bold text-foreground">ניהול שותפים</h1>
         <p className="text-muted-foreground">שותפים אחראי משווקים</p>
       </div>
-      <DataTable data={data} columns={columns} title="שותפים" addLabel="שותף חדש" onAdd={handleAdd} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <DataTable data={data} columns={columns} title="שותפים" addLabel="שותף חדש" onAdd={handleAdd} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
       <PartnerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>
