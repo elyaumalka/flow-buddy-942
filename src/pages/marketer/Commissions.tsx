@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type FilterDef } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { StatCard } from "@/components/admin/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,11 @@ const columns = [
   { key: "month", header: "חודש" },
   { key: "amount", header: "סכום עמלה", render: (item: any) => `₪${Number(item.amount).toLocaleString()}` },
   { key: "status", header: "סטטוס", render: (item: any) => <StatusBadge status={item.status} /> },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["שולם", "לא שולם", "ממתין"] },
+  { key: "month", label: "חודש" },
 ];
 
 export default function MarketerCommissions() {
@@ -53,7 +58,7 @@ export default function MarketerCommissions() {
           </CardContent>
         </Card>
       )}
-      <DataTable data={data} columns={columns} title="היסטוריית עמלות" />
+      <DataTable data={data} columns={columns} title="היסטוריית עמלות" filters={filters} />
     </div>
   );
 }

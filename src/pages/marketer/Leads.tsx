@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type FilterDef } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { LeadFormDialog, LeadFormData } from "@/components/admin/LeadFormDialog";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
@@ -13,6 +13,12 @@ const columns = [
   { key: "city", header: "כתובת" },
   { key: "community", header: "קהילה" },
   { key: "status", header: "סטטוס", render: (item: any) => <StatusBadge status={item.status} /> },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
+  { key: "community", label: "קהילה" },
+  { key: "city", label: "עיר" },
 ];
 
 export default function MarketerLeads() {
@@ -40,7 +46,7 @@ export default function MarketerLeads() {
         <h1 className="text-2xl font-bold text-foreground">לידים שלי</h1>
         <p className="text-muted-foreground">ניהול הלידים שהגיעו דרכך</p>
       </div>
-      <DataTable data={data} columns={columns} title="לידים" addLabel="ליד חדש" onAdd={handleAdd} searchPlaceholder="חיפוש לפי שם, טלפון..." onRowClick={handleEdit} />
+      <DataTable data={data} columns={columns} title="לידים" addLabel="ליד חדש" onAdd={handleAdd} searchPlaceholder="חיפוש לפי שם, טלפון..." onRowClick={handleEdit} filters={filters} />
       <LeadFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
     </div>
   );

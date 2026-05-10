@@ -1,6 +1,11 @@
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type FilterDef } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
+
+const filters: FilterDef[] = [
+  { key: "subscription", label: "סטטוס", options: ["פעיל", "לא פעיל", "מושהה"] },
+  { key: "community", label: "קהילה" },
+];
 
 const columns = [
   { key: "name", header: "שם הלקוח" },
@@ -19,7 +24,7 @@ export default function MarketerCustomers() {
         <h1 className="text-2xl font-bold text-foreground">הלקוחות שלי</h1>
         <p className="text-muted-foreground">לקוחות שהגיעו דרכך</p>
       </div>
-      <DataTable data={data} columns={columns} title="לקוחות" />
+      <DataTable data={data} columns={columns} title="לקוחות" filters={filters} />
     </div>
   );
 }
