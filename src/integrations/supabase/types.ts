@@ -412,30 +412,48 @@ export type Database = {
           amount: number
           created_at: string
           created_by: string | null
+          customer_id: string | null
           customer_name: string
           id: string
           invoice: string | null
+          notes: string | null
           payment_date: string
+          payment_method: string
+          period_end: string | null
+          period_month: string | null
+          period_start: string | null
           status: string
         }
         Insert: {
           amount?: number
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
           customer_name: string
           id?: string
           invoice?: string | null
+          notes?: string | null
           payment_date?: string
+          payment_method?: string
+          period_end?: string | null
+          period_month?: string | null
+          period_start?: string | null
           status?: string
         }
         Update: {
           amount?: number
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
           customer_name?: string
           id?: string
           invoice?: string | null
+          notes?: string | null
           payment_date?: string
+          payment_method?: string
+          period_end?: string | null
+          period_month?: string | null
+          period_start?: string | null
           status?: string
         }
         Relationships: []
