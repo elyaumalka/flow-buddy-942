@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type FilterDef } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { TaskFormDialog, TaskFormData } from "@/components/admin/TaskFormDialog";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
@@ -12,6 +12,11 @@ const columns = [
   { key: "due_date", header: "תאריך יעד" },
   { key: "priority", header: "דחיפות", render: (item: any) => <StatusBadge status={item.priority} /> },
   { key: "description", header: "תיאור" },
+];
+
+const filters: FilterDef[] = [
+  { key: "priority", label: "דחיפות", options: ["דחוף", "רגיל", "נמוך"] },
+  { key: "customer", label: "לקוח" },
 ];
 
 export default function MarketerTasks() {
@@ -39,7 +44,7 @@ export default function MarketerTasks() {
         <h1 className="text-2xl font-bold text-foreground">משימות</h1>
         <p className="text-muted-foreground">ניהול המשימות שלך</p>
       </div>
-      <DataTable data={data} columns={columns} title="משימות" addLabel="משימה חדשה" onAdd={handleAdd} onRowClick={handleEdit} />
+      <DataTable data={data} columns={columns} title="משימות" addLabel="משימה חדשה" onAdd={handleAdd} onRowClick={handleEdit} filters={filters} />
       <TaskFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
     </div>
   );

@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { LeadFormDialog, LeadFormData } from "@/components/admin/LeadFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -31,6 +32,14 @@ const bulkFields: BulkField[] = [
   { key: "status", label: "סטטוס", type: "select", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
   { key: "source", label: "מקור הגעה", type: "select", options: ["אתר", "טלפון", "הפניה", "פייסבוק"] },
   { key: "marketer_name", label: "משווק מקושר", type: "text" },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
+  { key: "source", label: "מקור הגעה" },
+  { key: "community", label: "קהילה" },
+  { key: "city", label: "עיר" },
+  { key: "marketer_name", label: "משווק מקושר" },
 ];
 
 export default function AdminLeads() {
@@ -105,6 +114,7 @@ export default function AdminLeads() {
         onRowClick={handleEdit}
         onBulkEdit={handleBulkEdit}
         onBulkDelete={handleBulkDelete}
+        filters={filters}
         extraBulkActions={[
           { label: "המר ללקוחות", icon: UserCheck, onClick: (ids) => setConvertIds(ids) },
         ]}

@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { StatCard } from "@/components/admin/StatCard";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import { AlertTriangle, Clock, DollarSign } from "lucide-react";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,11 @@ export default function AdminCollections() {
     { key: "status", label: "סטטוס טיפול", type: "select", options: ["ממתין", "בטיפול", "טופל", "מבוטל"] },
   ];
 
+  const filters: FilterDef[] = [
+    { key: "status", label: "סטטוס טיפול", options: ["ממתין", "בטיפול", "טופל", "מבוטל"] },
+    { key: "customer_name", label: "לקוח" },
+  ];
+
   const handleBulkEdit = (ids: string[]) => { setBulkIds(ids); setBulkOpen(true); };
   const handleBulkSave = async (updates: Record<string, any>) => {
     await bulkUpdate({ ids: bulkIds, updates });
@@ -49,7 +55,7 @@ export default function AdminCollections() {
         <StatCard title="ממתינים לטיפול" value={pending} icon={AlertTriangle} iconClassName="bg-chart-3/10 text-chart-3" />
         <StatCard title="סה״כ רשומות" value={data.length} icon={Clock} iconClassName="bg-primary/10 text-primary" />
       </div>
-      <DataTable data={data} columns={columns} title="חיובים שנכשלו" onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <DataTable data={data} columns={columns} title="חיובים שנכשלו" onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>
   );

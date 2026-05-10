@@ -3,6 +3,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { TaskFormDialog, TaskFormData } from "@/components/admin/TaskFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import type { FilterDef } from "@/components/admin/DataTable";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +21,12 @@ const bulkFields: BulkField[] = [
   { key: "due_date", label: "תאריך יעד", type: "text" },
   { key: "priority", label: "דחיפות", type: "select", options: ["דחוף", "רגיל", "נמוך"] },
   { key: "status", label: "סטטוס", type: "select", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
+];
+
+const filters: FilterDef[] = [
+  { key: "status", label: "סטטוס", options: ["חדש", "בטיפול", "ממתין", "הושלם"] },
+  { key: "priority", label: "דחיפות", options: ["דחוף", "רגיל", "נמוך"] },
+  { key: "customer", label: "לקוח" },
 ];
 
 export default function AdminTasks() {
@@ -53,7 +60,7 @@ export default function AdminTasks() {
         <h1 className="text-2xl font-bold text-foreground">משימות</h1>
         <p className="text-muted-foreground">ניהול משימות אישיות ולקוחות</p>
       </div>
-      <DataTable data={data} columns={columns} title="משימות" addLabel="משימה חדשה" onAdd={handleAdd} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} />
+      <DataTable data={data} columns={columns} title="משימות" addLabel="משימה חדשה" onAdd={handleAdd} onRowClick={handleEdit} onBulkEdit={handleBulkEdit} onBulkDelete={handleBulkDelete} filters={filters} />
       <TaskFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
       <BulkEditDialog open={bulkOpen} onOpenChange={setBulkOpen} fields={bulkFields} count={bulkIds.length} onSave={handleBulkSave} />
     </div>
