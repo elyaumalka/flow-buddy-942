@@ -1,15 +1,18 @@
+import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CustomerSidebar } from "@/components/customer/CustomerSidebar";
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { QuickAddMenu } from "@/components/customer/QuickAddMenu";
+import { ReportsDialog } from "@/components/customer/ReportsDialog";
 
 export default function CustomerLayout() {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const [reportsOpen, setReportsOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -28,6 +31,15 @@ export default function CustomerLayout() {
             </div>
             <div className="flex items-center gap-2">
               <QuickAddMenu />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setReportsOpen(true)}
+                className="rounded-xl gap-1.5 font-bold border-border/60 hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-colors"
+              >
+                <FileText className="h-4 w-4" />
+                הפקת דוחות
+              </Button>
               <ThemeToggle />
               <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell className="h-5 w-5" />
@@ -44,6 +56,7 @@ export default function CustomerLayout() {
             <Outlet />
           </main>
         </div>
+        <ReportsDialog open={reportsOpen} onOpenChange={setReportsOpen} />
       </div>
     </SidebarProvider>
   );
