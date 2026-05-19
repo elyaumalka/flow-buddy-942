@@ -37,7 +37,7 @@ export function QuickAddMenu() {
             הוספה מהירה
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" dir="rtl" className="rounded-xl w-44">
+        <DropdownMenuContent align="start" className="rounded-xl w-44">
           <DropdownMenuItem onClick={() => setIncomeOpen(true)} className="gap-2 cursor-pointer rounded-lg">
             <TrendingUp className="h-4 w-4 text-success" />
             הכנסה חדשה
