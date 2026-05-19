@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-type TableName = "leads" | "partners" | "marketers" | "customers" | "tasks" | "tickets" | "payments" | "collections" | "commissions" | "income" | "expenses" | "goals" | "tithes";
+type TableName = "leads" | "partners" | "marketers" | "customers" | "tasks" | "tickets" | "payments" | "collections" | "commissions" | "income" | "expenses" | "goals" | "tithes" | "coupons";
 
 export function useSupabaseTable<T extends Record<string, any>>(
   table: TableName,
