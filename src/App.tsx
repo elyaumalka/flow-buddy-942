@@ -21,6 +21,7 @@ import AdminCustomers from "@/pages/admin/Customers";
 import AdminPayments from "@/pages/admin/Payments";
 import AdminCollections from "@/pages/admin/Collections";
 import AdminCommissions from "@/pages/admin/Commissions";
+import AdminCoupons from "@/pages/admin/Coupons";
 import AdminReports from "@/pages/admin/Reports";
 import AdminStatistics from "@/pages/admin/Statistics";
 import AdminTasks from "@/pages/admin/Tasks";
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="payments" element={<AdminPayments />} />
               <Route path="collections" element={<AdminCollections />} />
               <Route path="commissions" element={<AdminCommissions />} />
+              <Route path="coupons" element={<AdminCoupons />} />
               <Route path="reports" element={<AdminReports />} />
               <Route path="statistics" element={<AdminStatistics />} />
               <Route path="tasks" element={<AdminTasks />} />
