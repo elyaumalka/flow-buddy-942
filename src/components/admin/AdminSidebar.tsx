@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, Handshake, Megaphone, UserCheck,
   CreditCard, AlertTriangle, Percent, FileText, BarChart3,
-  CheckSquare, CalendarDays, HeadphonesIcon, Settings,
+  CheckSquare, CalendarDays, HeadphonesIcon, Settings, Ticket,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -21,6 +21,7 @@ const menuItems = [
   { title: "תשלומים", url: "/admin/payments", icon: CreditCard },
   { title: "הו״ק לטיפול", url: "/admin/collections", icon: AlertTriangle },
   { title: "עמלות", url: "/admin/commissions", icon: Percent },
+  { title: "קופונים", url: "/admin/coupons", icon: Ticket },
   { title: "דוחות", url: "/admin/reports", icon: FileText },
   { title: "סטטיסטיקות", url: "/admin/statistics", icon: BarChart3 },
   { title: "משימות", url: "/admin/tasks", icon: CheckSquare },
