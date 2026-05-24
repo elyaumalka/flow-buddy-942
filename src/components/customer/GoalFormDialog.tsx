@@ -7,10 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Target, Save } from "lucide-react";
 
 export interface GoalFormData {
-  title: string; current_amount: number; target_amount: number; goal_type: string;
+  title: string; current_amount: number; target_amount: number; goal_type: string; duration_months: number;
 }
 
-const empty: GoalFormData = { title: "", current_amount: 0, target_amount: 0, goal_type: "income" };
+const empty: GoalFormData = { title: "", current_amount: 0, target_amount: 0, goal_type: "income", duration_months: 1 };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
@@ -48,6 +48,10 @@ export function GoalFormDialog({ open, onOpenChange, initialData, onSave }: Prop
                 <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-xl"><SelectItem value="income">הכנסות</SelectItem><SelectItem value="expense">הוצאות</SelectItem><SelectItem value="savings">חיסכון</SelectItem></SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-semibold text-xs">משך להשגת היעד (חודשים)</Label>
+              <Input type="number" min={1} step={1} value={form.duration_months} onChange={(e) => set("duration_months", Math.max(1, Number(e.target.value)))} required className="rounded-xl" dir="ltr" />
             </div>
           </div>
           <div className="flex gap-2 justify-end pt-3 border-t border-border/50">

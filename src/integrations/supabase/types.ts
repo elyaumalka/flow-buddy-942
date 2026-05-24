@@ -235,6 +235,7 @@ export type Database = {
         Row: {
           created_at: string
           current_amount: number
+          duration_months: number
           goal_type: string
           id: string
           target_amount: number
@@ -245,6 +246,7 @@ export type Database = {
         Insert: {
           created_at?: string
           current_amount?: number
+          duration_months?: number
           goal_type?: string
           id?: string
           target_amount?: number
@@ -255,6 +257,7 @@ export type Database = {
         Update: {
           created_at?: string
           current_amount?: number
+          duration_months?: number
           goal_type?: string
           id?: string
           target_amount?: number
