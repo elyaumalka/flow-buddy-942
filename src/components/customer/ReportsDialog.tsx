@@ -447,6 +447,63 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
             </div>
           )}
 
+          <div className="space-y-3 p-3 rounded-xl bg-muted/20 border border-border/50">
+            <Label className="font-semibold text-xs">סינונים נוספים</Label>
+
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-muted-foreground">סוג רשומות</p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { v: "all", l: "הכל" },
+                  { v: "income", l: "הכנסות" },
+                  { v: "expense", l: "הוצאות" },
+                ] as const).map((o) => (
+                  <button key={o.v} type="button" onClick={() => setFilterKind(o.v)}
+                    className={`p-2 rounded-lg border text-xs transition-all ${filterKind === o.v ? "border-primary bg-primary/10 font-semibold" : "border-border bg-background"}`}>
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-muted-foreground">אופן ביצוע</p>
+              <div className="flex flex-wrap gap-1.5">
+                {["אשראי", "מזומן", "בנקאי", "אחר", "ללא"].map((m) => {
+                  const checked = filterPaymentMethods.includes(m);
+                  return (
+                    <label key={m} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border cursor-pointer text-xs ${checked ? "bg-primary/10 border-primary" : "border-border bg-background"}`}>
+                      <Checkbox checked={checked} onCheckedChange={() => setFilterPaymentMethods((p) => p.includes(m) ? p.filter(x => x !== m) : [...p, m])} />
+                      {m}
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">ללא בחירה = הכל</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-muted-foreground">קטגוריות</p>
+              {allCats.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground">אין קטגוריות</p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {allCats.map((c) => {
+                    const checked = filterCategories.includes(c);
+                    return (
+                      <label key={c} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border cursor-pointer text-xs ${checked ? "bg-primary/10 border-primary" : "border-border bg-background"}`}>
+                        <Checkbox checked={checked} onCheckedChange={() => setFilterCategories((p) => p.includes(c) ? p.filter(x => x !== c) : [...p, c])} />
+                        {c}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground">ללא בחירה = הכל</p>
+            </div>
+          </div>
+
+
           <div className="space-y-2">
             <Label className="font-semibold text-xs flex items-center gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> תקופת הדוח</Label>
             <Select value={period} onValueChange={(v) => {
