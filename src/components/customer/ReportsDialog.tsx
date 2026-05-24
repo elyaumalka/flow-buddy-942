@@ -41,11 +41,12 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const [reportType, setReportType] = useState<ReportType>("general");
   const [period, setPeriod] = useState<Period>("monthly");
+  const [fileFormat, setFileFormat] = useState<FileFormat>("pdf");
   const [rangeStart, setRangeStart] = useState("");
   const [rangeEnd, setRangeEnd] = useState("");
   const [usePassword, setUsePassword] = useState(false);
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<null | "download" | "email">(null);
 
   const [allCategories, setAllCategories] = useState<{ income: string[]; expense: string[] }>({ income: [], expense: [] });
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
