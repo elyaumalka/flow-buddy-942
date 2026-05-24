@@ -7,10 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TrendingDown, Save } from "lucide-react";
 
 export interface ExpenseFormData {
-  amount: number; expense_date: string; type: string; category: string; status: string;
+  amount: number; expense_date: string; type: string; category: string; status: string; payment_method: string;
 }
 
-const empty: ExpenseFormData = { amount: 0, expense_date: new Date().toISOString().split("T")[0], type: "חודשי", category: "", status: "מאושר" };
+const empty: ExpenseFormData = { amount: 0, expense_date: new Date().toISOString().split("T")[0], type: "חודשי", category: "", status: "מאושר", payment_method: "ללא" };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
