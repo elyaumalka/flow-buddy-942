@@ -127,8 +127,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<CustomerDashboard />} />
-              <Route path="income" element={<CustomerIncome />} />
-              <Route path="expenses" element={<CustomerExpenses />} />
+              <Route path="cashflow" element={<CashFlow />} />
               <Route path="goals" element={<CustomerGoals />} />
               <Route path="statistics" element={<CustomerStatistics />} />
               <Route path="tithes" element={<CustomerTithes />} />
