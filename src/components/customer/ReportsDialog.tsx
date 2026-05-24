@@ -6,17 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Download, Lock, BarChart3 } from "lucide-react";
+import { FileText, Download, Lock, BarChart3, Mail, FileSpreadsheet, FileType } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { gregWithHebrew } from "@/lib/hebrewDate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
 
 type ReportType = "general" | "tithe" | "income" | "expense" | "categories" | "analysis";
 type Period = "monthly" | "quarterly" | "yearly" | "range";
+type FileFormat = "pdf" | "xlsx";
 
 interface Props { open: boolean; onOpenChange: (open: boolean) => void; }
 
