@@ -237,7 +237,9 @@ export type Database = {
           current_amount: number
           duration_months: number
           goal_type: string
+          has_commission: boolean
           id: string
+          savings_location: string | null
           target_amount: number
           title: string
           updated_at: string
@@ -248,7 +250,9 @@ export type Database = {
           current_amount?: number
           duration_months?: number
           goal_type?: string
+          has_commission?: boolean
           id?: string
+          savings_location?: string | null
           target_amount?: number
           title: string
           updated_at?: string
@@ -259,7 +263,9 @@ export type Database = {
           current_amount?: number
           duration_months?: number
           goal_type?: string
+          has_commission?: boolean
           id?: string
+          savings_location?: string | null
           target_amount?: number
           title?: string
           updated_at?: string

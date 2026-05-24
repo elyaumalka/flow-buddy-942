@@ -3,14 +3,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Target, Save } from "lucide-react";
 
 export interface GoalFormData {
   title: string; current_amount: number; target_amount: number; goal_type: string; duration_months: number;
+  savings_location?: string | null; has_commission?: boolean;
 }
 
-const empty: GoalFormData = { title: "", current_amount: 0, target_amount: 0, goal_type: "income", duration_months: 1 };
+const empty: GoalFormData = { title: "", current_amount: 0, target_amount: 0, goal_type: "income", duration_months: 1, savings_location: "", has_commission: false };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
@@ -26,7 +28,13 @@ export function GoalFormDialog({ open, onOpenChange, initialData, onSave }: Prop
     else setForm(empty);
   }, [initialData, open]);
   const set = (key: keyof GoalFormData, value: any) => setForm((p) => ({ ...p, [key]: value }));
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form, (initialData as any)?.id); onOpenChange(false); };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload: GoalFormData = { ...form };
+    if (payload.goal_type !== "savings") { payload.savings_location = null; payload.has_commission = false; }
+    onSave(payload, (initialData as any)?.id);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -54,6 +62,25 @@ export function GoalFormDialog({ open, onOpenChange, initialData, onSave }: Prop
               <Input type="number" min={1} step={1} value={form.duration_months} onChange={(e) => set("duration_months", Math.max(1, Number(e.target.value)))} required className="rounded-xl" dir="ltr" />
             </div>
           </div>
+
+          {form.goal_type === "savings" && (
+            <div className="space-y-4 p-3 rounded-xl bg-muted/30 border border-border/50">
+              <div className="space-y-2">
+                <Label className="font-semibold text-xs">מיקום החיסכון</Label>
+                <Input
+                  value={form.savings_location || ""}
+                  onChange={(e) => set("savings_location", e.target.value)}
+                  placeholder="לדוגמה: בנק הפועלים, מזומן בבית, קופת גמל…"
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold text-xs">מתקבלת עמלה על החיסכון</Label>
+                <Switch checked={!!form.has_commission} onCheckedChange={(v) => set("has_commission", v)} />
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2 justify-end pt-3 border-t border-border/50">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">ביטול</Button>
             <Button type="submit" className="rounded-xl gradient-primary border-0 shadow-glow-sm hover:shadow-glow transition-shadow gap-1.5"><Save className="h-4 w-4" />{isEdit ? "עדכן" : "הוסף"}</Button>
