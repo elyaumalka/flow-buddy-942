@@ -339,9 +339,21 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         supabase.from("expenses").select("*").eq("user_id", user.id).gte("expense_date", fromIso).lte("expense_date", toIso).order("expense_date"),
         supabase.from("tithes").select("*").eq("user_id", user.id).gte("tithe_date", fromIso).lte("tithe_date", toIso).order("tithe_date"),
       ]);
-      const incomeRows = incomeRes.data ?? [];
-      const expenseRows = expensesRes.data ?? [];
+      let incomeRows = incomeRes.data ?? [];
+      let expenseRows = expensesRes.data ?? [];
       const titheRows = tithesRes.data ?? [];
+
+      // Apply user filters
+      if (filterPaymentMethods.length > 0) {
+        incomeRows = incomeRows.filter((r: any) => filterPaymentMethods.includes(r.payment_method || "ללא"));
+        expenseRows = expenseRows.filter((r: any) => filterPaymentMethods.includes(r.payment_method || "ללא"));
+      }
+      if (filterCategories.length > 0) {
+        incomeRows = incomeRows.filter((r: any) => filterCategories.includes(r.category || ""));
+        expenseRows = expenseRows.filter((r: any) => filterCategories.includes(r.category || ""));
+      }
+      if (filterKind === "income") expenseRows = [];
+      if (filterKind === "expense") incomeRows = [];
 
       const safeLabel = label.replace(/[/\\: ]/g, "-");
 
