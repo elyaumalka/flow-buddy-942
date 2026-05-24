@@ -178,7 +178,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         if (titheRows.length) {
           autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
             head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
-            body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), format(new Date(r.tithe_date), "dd/MM/yyyy")]),
+            body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), gregWithHebrew(r.tithe_date)]),
             styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [99, 102, 241], halign: "right" },
             didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט מעשרות"), 200, d.settings.startY! - 4, { align: "right" }); } });
         }
