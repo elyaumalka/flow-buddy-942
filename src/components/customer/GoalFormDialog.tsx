@@ -7,10 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Target, Save } from "lucide-react";
 
 export interface GoalFormData {
-  title: string; current_amount: number; target_amount: number; goal_type: string;
+  title: string; current_amount: number; target_amount: number; goal_type: string; duration_months: number;
 }
 
-const empty: GoalFormData = { title: "", current_amount: 0, target_amount: 0, goal_type: "income" };
+const empty: GoalFormData = { title: "", current_amount: 0, target_amount: 0, goal_type: "income", duration_months: 1 };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
