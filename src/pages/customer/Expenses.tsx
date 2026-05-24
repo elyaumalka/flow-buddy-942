@@ -54,7 +54,8 @@ export default function CustomerExpenses() {
         <StatCard title="הוצאות צפויות" value={`₪${expected.toLocaleString()}`} icon={Calendar} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="לאישור" value={pending} icon={CheckCircle} iconClassName="bg-chart-3/10 text-chart-3" />
       </div>
-      <DataTable data={data} columns={columns} title="הוצאות" addLabel="הוצאה חדשה" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit} />
+      <DataTable data={data} columns={columns} title="הוצאות" addLabel="הוצאה חדשה" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit}
+        filters={[{ key: "type", label: "סוג" }, { key: "category", label: "קטגוריה" }, { key: "status", label: "סטטוס" }]} />
       <ExpenseFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
     </div>
   );
