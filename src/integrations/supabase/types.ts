@@ -239,8 +239,10 @@ export type Database = {
           goal_type: string
           has_commission: boolean
           id: string
+          savings_categories: string[] | null
           savings_location: string | null
           target_amount: number
+          target_date: string | null
           title: string
           updated_at: string
           user_id: string
@@ -252,8 +254,10 @@ export type Database = {
           goal_type?: string
           has_commission?: boolean
           id?: string
+          savings_categories?: string[] | null
           savings_location?: string | null
           target_amount?: number
+          target_date?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -265,8 +269,10 @@ export type Database = {
           goal_type?: string
           has_commission?: boolean
           id?: string
+          savings_categories?: string[] | null
           savings_location?: string | null
           target_amount?: number
+          target_date?: string | null
           title?: string
           updated_at?: string
           user_id?: string

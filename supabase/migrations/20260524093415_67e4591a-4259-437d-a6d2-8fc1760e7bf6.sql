@@ -1,0 +1,1 @@
+ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS target_date date, ADD COLUMN IF NOT EXISTS savings_categories text[];
