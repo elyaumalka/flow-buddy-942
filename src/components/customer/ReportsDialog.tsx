@@ -450,19 +450,39 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          <div className="rounded-xl border border-border/50 p-3 space-y-3 bg-muted/20">
-            <div className="flex items-center justify-between">
-              <Label className="font-semibold text-xs flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> הגן על הקובץ בסיסמא</Label>
-              <Switch checked={usePassword} onCheckedChange={setUsePassword} />
+          <div className="space-y-2">
+            <Label className="font-semibold text-xs">פורמט קובץ (להורדה)</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setFileFormat("pdf")}
+                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-sm transition-all ${fileFormat === "pdf" ? "border-primary bg-primary/10 font-semibold" : "border-border bg-background"}`}>
+                <FileType className="h-4 w-4" /> PDF
+              </button>
+              <button type="button" onClick={() => setFileFormat("xlsx")}
+                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-sm transition-all ${fileFormat === "xlsx" ? "border-primary bg-primary/10 font-semibold" : "border-background bg-background"} ${fileFormat === "xlsx" ? "border-primary" : ""}`}>
+                <FileSpreadsheet className="h-4 w-4" /> Excel
+              </button>
             </div>
-            {usePassword && <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="הזן סיסמא לקובץ ה-PDF" className="rounded-xl" />}
+            <p className="text-[10px] text-muted-foreground">בשליחה למייל יישלחו שני סוגי הקבצים (PDF + Excel)</p>
           </div>
+
+          {fileFormat === "pdf" && (
+            <div className="rounded-xl border border-border/50 p-3 space-y-3 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold text-xs flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> הגן על הקובץ בסיסמא</Label>
+                <Switch checked={usePassword} onCheckedChange={setUsePassword} />
+              </div>
+              {usePassword && <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="הזן סיסמא לקובץ ה-PDF" className="rounded-xl" />}
+            </div>
+          )}
         </div>
 
-        <div className="flex gap-2 justify-end pt-3 border-t border-border/50">
+        <div className="flex flex-wrap gap-2 justify-end pt-3 border-t border-border/50">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">ביטול</Button>
-          <Button onClick={handleGenerate} disabled={loading} className="rounded-xl gradient-primary border-0 shadow-glow-sm hover:shadow-glow transition-shadow gap-1.5">
-            <Download className="h-4 w-4" />{loading ? "מפיק..." : "הפק דוח"}
+          <Button onClick={() => handleAction("email")} disabled={!!loading} variant="outline" className="rounded-xl gap-1.5">
+            <Mail className="h-4 w-4" />{loading === "email" ? "מכין..." : "שליחה למייל"}
+          </Button>
+          <Button onClick={() => handleAction("download")} disabled={!!loading} className="rounded-xl gradient-primary border-0 shadow-glow-sm hover:shadow-glow transition-shadow gap-1.5">
+            <Download className="h-4 w-4" />{loading === "download" ? "מפיק..." : "הורדה"}
           </Button>
         </div>
       </DialogContent>
