@@ -53,6 +53,8 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
   useEffect(() => {
     if (!open || !user) return;
+    if (!rangeStart) setRangeStart(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+    if (!rangeEnd) setRangeEnd(format(endOfMonth(new Date()), "yyyy-MM-dd"));
     (async () => {
       const [i, e] = await Promise.all([
         supabase.from("income").select("category").eq("user_id", user.id),
