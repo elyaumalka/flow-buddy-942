@@ -37,8 +37,7 @@ import MarketerCommissions from "@/pages/marketer/Commissions";
 import MarketerSettings from "@/pages/marketer/Settings";
 import CustomerLayout from "@/layouts/CustomerLayout";
 import CustomerDashboard from "@/pages/customer/Dashboard";
-import CustomerIncome from "@/pages/customer/Income";
-import CustomerExpenses from "@/pages/customer/Expenses";
+import CashFlow from "@/pages/customer/CashFlow";
 import CustomerGoals from "@/pages/customer/Goals";
 import CustomerStatistics from "@/pages/customer/Statistics";
 import CustomerTithes from "@/pages/customer/Tithes";
@@ -128,8 +127,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<CustomerDashboard />} />
-              <Route path="income" element={<CustomerIncome />} />
-              <Route path="expenses" element={<CustomerExpenses />} />
+              <Route path="cashflow" element={<CashFlow />} />
               <Route path="goals" element={<CustomerGoals />} />
               <Route path="statistics" element={<CustomerStatistics />} />
               <Route path="tithes" element={<CustomerTithes />} />
