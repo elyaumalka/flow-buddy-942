@@ -178,7 +178,7 @@ export default function CashFlow() {
             onRowClick={handleEditExpense}
             onBulkEdit={handleExpenseBulkEdit}
             onBulkDelete={handleExpenseBulkDelete}
-            filters={[{ key: "type", label: "סוג" }, { key: "category", label: "קטגוריה" }, { key: "status", label: "סטטוס" }]}
+            filters={[{ key: "type", label: "סוג" }, { key: "category", label: "קטגוריה" }, { key: "payment_method", label: "אופן ביצוע" }, { key: "status", label: "סטטוס" }]}
           />
         </TabsContent>
       </Tabs>
