@@ -70,6 +70,22 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
     })();
   }, [open, user]);
 
+  useEffect(() => {
+    if (!open || !user) return;
+    (async () => {
+      const { from, to } = getRange();
+      const fromIso = from.toISOString();
+      const toIso = to.toISOString();
+      const [inc, exp] = await Promise.all([
+        supabase.from("income").select("status").eq("user_id", user.id).gte("income_date", fromIso).lte("income_date", toIso),
+        supabase.from("expenses").select("status").eq("user_id", user.id).gte("expense_date", fromIso).lte("expense_date", toIso),
+      ]);
+      const incPending = (inc.data || []).filter((r: any) => r.status !== "מאושר").length;
+      const expPending = (exp.data || []).filter((r: any) => r.status !== "מאושר").length;
+      setPendingCounts({ income: incPending, expense: expPending });
+    })();
+  }, [open, user, period, rangeStart, rangeEnd]);
+
   const getRange = (): { from: Date; to: Date; label: string } => {
     const now = new Date();
     if (period === "monthly") return { from: startOfMonth(now), to: endOfMonth(now), label: format(now, "MM/yyyy") };
