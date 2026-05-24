@@ -21,6 +21,7 @@ const incomeColumns = [
   { key: "income_date", header: "תאריך", render: (item: any) => new Date(item.income_date).toLocaleDateString("he-IL") },
   { key: "type", header: "סוג", render: (item: any) => <Badge variant="outline" className="font-medium">{item.type}</Badge> },
   { key: "category", header: "קטגוריה" },
+  { key: "payment_method", header: "אופן ביצוע", render: (item: any) => <Badge variant="outline" className="font-medium">{item.payment_method || "ללא"}</Badge> },
   { key: "status", header: "סטטוס", render: (item: any) => <Badge variant="outline" className={`font-medium ${statusMap[item.status] || ""}`}>{item.status}</Badge> },
 ];
 
@@ -29,18 +30,21 @@ const expenseColumns = [
   { key: "expense_date", header: "תאריך", render: (item: any) => new Date(item.expense_date).toLocaleDateString("he-IL") },
   { key: "type", header: "סוג", render: (item: any) => <Badge variant="outline" className="font-medium">{item.type}</Badge> },
   { key: "category", header: "קטגוריה" },
+  { key: "payment_method", header: "אופן ביצוע", render: (item: any) => <Badge variant="outline" className="font-medium">{item.payment_method || "ללא"}</Badge> },
   { key: "status", header: "סטטוס", render: (item: any) => <Badge variant="outline" className={`font-medium ${statusMap[item.status] || ""}`}>{item.status}</Badge> },
 ];
 
 const incomeBulkFields: BulkField[] = [
   { key: "type", label: "סוג", type: "select", options: ["חודשי", "חד פעמי"] },
   { key: "category", label: "קטגוריה", type: "text" },
+  { key: "payment_method", label: "אופן ביצוע", type: "select", options: ["אשראי", "מזומן", "בנקאי", "אחר", "ללא"] },
   { key: "status", label: "סטטוס", type: "select", options: ["מאושר", "לאישור", "צפוי"] },
 ];
 
 const expenseBulkFields: BulkField[] = [
   { key: "type", label: "סוג", type: "select", options: ["חודשי", "חד פעמי"] },
   { key: "category", label: "קטגוריה", type: "text" },
+  { key: "payment_method", label: "אופן ביצוע", type: "select", options: ["אשראי", "מזומן", "בנקאי", "אחר", "ללא"] },
   { key: "status", label: "סטטוס", type: "select", options: ["מאושר", "לאישור", "צפוי"] },
 ];
 
@@ -154,7 +158,7 @@ export default function CashFlow() {
             onRowClick={handleEditIncome}
             onBulkEdit={handleIncomeBulkEdit}
             onBulkDelete={handleIncomeBulkDelete}
-            filters={[{ key: "type", label: "סוג" }, { key: "category", label: "קטגוריה" }, { key: "status", label: "סטטוס" }]}
+            filters={[{ key: "type", label: "סוג" }, { key: "category", label: "קטגוריה" }, { key: "payment_method", label: "אופן ביצוע" }, { key: "status", label: "סטטוס" }]}
           />
         </TabsContent>
 
@@ -174,7 +178,7 @@ export default function CashFlow() {
             onRowClick={handleEditExpense}
             onBulkEdit={handleExpenseBulkEdit}
             onBulkDelete={handleExpenseBulkDelete}
-            filters={[{ key: "type", label: "סוג" }, { key: "category", label: "קטגוריה" }, { key: "status", label: "סטטוס" }]}
+            filters={[{ key: "type", label: "סוג" }, { key: "category", label: "קטגוריה" }, { key: "payment_method", label: "אופן ביצוע" }, { key: "status", label: "סטטוס" }]}
           />
         </TabsContent>
       </Tabs>

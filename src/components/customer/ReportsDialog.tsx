@@ -50,6 +50,9 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
   const [allCategories, setAllCategories] = useState<{ income: string[]; expense: string[] }>({ income: [], expense: [] });
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
+  const [filterPaymentMethods, setFilterPaymentMethods] = useState<string[]>([]);
+  const [filterCategories, setFilterCategories] = useState<string[]>([]);
+  const [filterKind, setFilterKind] = useState<"all" | "income" | "expense">("all");
 
   useEffect(() => {
     if (!open || !user) return;
@@ -336,9 +339,21 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         supabase.from("expenses").select("*").eq("user_id", user.id).gte("expense_date", fromIso).lte("expense_date", toIso).order("expense_date"),
         supabase.from("tithes").select("*").eq("user_id", user.id).gte("tithe_date", fromIso).lte("tithe_date", toIso).order("tithe_date"),
       ]);
-      const incomeRows = incomeRes.data ?? [];
-      const expenseRows = expensesRes.data ?? [];
+      let incomeRows = incomeRes.data ?? [];
+      let expenseRows = expensesRes.data ?? [];
       const titheRows = tithesRes.data ?? [];
+
+      // Apply user filters
+      if (filterPaymentMethods.length > 0) {
+        incomeRows = incomeRows.filter((r: any) => filterPaymentMethods.includes(r.payment_method || "ללא"));
+        expenseRows = expenseRows.filter((r: any) => filterPaymentMethods.includes(r.payment_method || "ללא"));
+      }
+      if (filterCategories.length > 0) {
+        incomeRows = incomeRows.filter((r: any) => filterCategories.includes(r.category || ""));
+        expenseRows = expenseRows.filter((r: any) => filterCategories.includes(r.category || ""));
+      }
+      if (filterKind === "income") expenseRows = [];
+      if (filterKind === "expense") incomeRows = [];
 
       const safeLabel = label.replace(/[/\\: ]/g, "-");
 
@@ -431,6 +446,63 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
               )}
             </div>
           )}
+
+          <div className="space-y-3 p-3 rounded-xl bg-muted/20 border border-border/50">
+            <Label className="font-semibold text-xs">סינונים נוספים</Label>
+
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-muted-foreground">סוג רשומות</p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { v: "all", l: "הכל" },
+                  { v: "income", l: "הכנסות" },
+                  { v: "expense", l: "הוצאות" },
+                ] as const).map((o) => (
+                  <button key={o.v} type="button" onClick={() => setFilterKind(o.v)}
+                    className={`p-2 rounded-lg border text-xs transition-all ${filterKind === o.v ? "border-primary bg-primary/10 font-semibold" : "border-border bg-background"}`}>
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-muted-foreground">אופן ביצוע</p>
+              <div className="flex flex-wrap gap-1.5">
+                {["אשראי", "מזומן", "בנקאי", "אחר", "ללא"].map((m) => {
+                  const checked = filterPaymentMethods.includes(m);
+                  return (
+                    <label key={m} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border cursor-pointer text-xs ${checked ? "bg-primary/10 border-primary" : "border-border bg-background"}`}>
+                      <Checkbox checked={checked} onCheckedChange={() => setFilterPaymentMethods((p) => p.includes(m) ? p.filter(x => x !== m) : [...p, m])} />
+                      {m}
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">ללא בחירה = הכל</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-muted-foreground">קטגוריות</p>
+              {allCats.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground">אין קטגוריות</p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {allCats.map((c) => {
+                    const checked = filterCategories.includes(c);
+                    return (
+                      <label key={c} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border cursor-pointer text-xs ${checked ? "bg-primary/10 border-primary" : "border-border bg-background"}`}>
+                        <Checkbox checked={checked} onCheckedChange={() => setFilterCategories((p) => p.includes(c) ? p.filter(x => x !== c) : [...p, c])} />
+                        {c}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground">ללא בחירה = הכל</p>
+            </div>
+          </div>
+
 
           <div className="space-y-2">
             <Label className="font-semibold text-xs flex items-center gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> תקופת הדוח</Label>

@@ -7,10 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TrendingUp, Save } from "lucide-react";
 
 export interface IncomeFormData {
-  amount: number; income_date: string; type: string; category: string; status: string;
+  amount: number; income_date: string; type: string; category: string; status: string; payment_method: string;
 }
 
-const empty: IncomeFormData = { amount: 0, income_date: new Date().toISOString().split("T")[0], type: "חודשי", category: "", status: "מאושר" };
+const empty: IncomeFormData = { amount: 0, income_date: new Date().toISOString().split("T")[0], type: "חודשי", category: "", status: "מאושר", payment_method: "ללא" };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
@@ -54,6 +54,19 @@ export function IncomeFormDialog({ open, onOpenChange, initialData, onSave }: Pr
               <Select value={form.status} onValueChange={(v) => set("status", v)}>
                 <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-xl"><SelectItem value="מאושר">מאושר</SelectItem><SelectItem value="לאישור">לאישור</SelectItem><SelectItem value="צפוי">צפוי</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 col-span-2">
+              <Label className="font-semibold text-xs">אופן ביצוע</Label>
+              <Select value={form.payment_method} onValueChange={(v) => set("payment_method", v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="אשראי">אשראי</SelectItem>
+                  <SelectItem value="מזומן">מזומן</SelectItem>
+                  <SelectItem value="בנקאי">בנקאי</SelectItem>
+                  <SelectItem value="אחר">אחר</SelectItem>
+                  <SelectItem value="ללא">ללא</SelectItem>
+                </SelectContent>
               </Select>
             </div>
           </div>
