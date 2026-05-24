@@ -53,6 +53,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
   const [filterPaymentMethods, setFilterPaymentMethods] = useState<string[]>([]);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [filterKind, setFilterKind] = useState<"all" | "income" | "expense">("all");
+  const [pendingCounts, setPendingCounts] = useState({ income: 0, expense: 0 });
 
   useEffect(() => {
     if (!open || !user) return;
@@ -68,6 +69,22 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
       setAllCategories({ income: incomeCats, expense: expenseCats });
     })();
   }, [open, user]);
+
+  useEffect(() => {
+    if (!open || !user) return;
+    (async () => {
+      const { from, to } = getRange();
+      const fromIso = from.toISOString();
+      const toIso = to.toISOString();
+      const [inc, exp] = await Promise.all([
+        supabase.from("income").select("status").eq("user_id", user.id).gte("income_date", fromIso).lte("income_date", toIso),
+        supabase.from("expenses").select("status").eq("user_id", user.id).gte("expense_date", fromIso).lte("expense_date", toIso),
+      ]);
+      const incPending = (inc.data || []).filter((r: any) => r.status !== "מאושר").length;
+      const expPending = (exp.data || []).filter((r: any) => r.status !== "מאושר").length;
+      setPendingCounts({ income: incPending, expense: expPending });
+    })();
+  }, [open, user, period, rangeStart, rangeEnd]);
 
   const getRange = (): { from: Date; to: Date; label: string } => {
     const now = new Date();
@@ -105,6 +122,12 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
       summary.push(["מעשר צפוי (10%)", fmt(Math.round(sumIncome * 0.1))]);
       summary.push(["מעשר שולם", fmt(sumTithe)]);
       summary.push(["נותר לתשלום", fmt(Math.max(Math.round(sumIncome * 0.1) - sumTithe, 0))]);
+      const incPendingCount = incomeRows.filter((r: any) => r.status !== "מאושר").length;
+      const expPendingCount = expenseRows.filter((r: any) => r.status !== "מאושר").length;
+      if (incPendingCount > 0 || expPendingCount > 0) {
+        summary.push(["", ""]);
+        summary.push(["רשומות לא מאושרות בתקופה", `הכנסות: ${incPendingCount} | הוצאות: ${expPendingCount}`]);
+      }
       addSheet("סיכום", summary);
     }
 
@@ -195,6 +218,8 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
     const sumExpense = expenseRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
     const sumTithe = titheRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
     const balance = sumIncome - sumExpense;
+    const incPendingCount = incomeRows.filter((r: any) => r.status !== "מאושר").length;
+    const expPendingCount = expenseRows.filter((r: any) => r.status !== "מאושר").length;
 
     const groupBy = (rows: any[], key: string) => {
       const m: Record<string, number> = {};
@@ -222,6 +247,16 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
     ]);
 
     let cursorY = 38;
+    if (incPendingCount > 0 || expPendingCount > 0) {
+      doc.setFontSize(10);
+      doc.setTextColor(255, 140, 0);
+      const parts: string[] = [];
+      if (incPendingCount > 0) parts.push(`הכנסות: ${incPendingCount}`);
+      if (expPendingCount > 0) parts.push(`הוצאות: ${expPendingCount}`);
+      doc.text(t(`רשומות לא מאושרות בתקופה: ${parts.join(" | ")}`), 200, cursorY, { align: "right" });
+      doc.setTextColor(0, 0, 0);
+      cursorY = 44;
+    }
 
     if (reportType === "general") {
       autoTable(doc, { startY: cursorY, head: [[t("סכום (₪)"), t("פריט")]],
@@ -527,6 +562,20 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
             <div className="space-y-2"><Label className="font-semibold text-xs">מתאריך</Label><Input type="date" value={rangeStart} onChange={(e) => { setRangeStart(e.target.value); setPeriod("range"); }} className="rounded-xl" dir="ltr" /></div>
             <div className="space-y-2"><Label className="font-semibold text-xs">עד תאריך</Label><Input type="date" value={rangeEnd} onChange={(e) => { setRangeEnd(e.target.value); setPeriod("range"); }} className="rounded-xl" dir="ltr" /></div>
           </div>
+
+          {(pendingCounts.income > 0 || pendingCounts.expense > 0) && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+              <p className="text-xs font-semibold text-amber-400">רשומות ממתינות לאישור בתקופה הנבחרת</p>
+              <div className="flex items-center gap-4 flex-wrap">
+                {pendingCounts.income > 0 && (
+                  <span className="text-xs text-amber-200">הכנסות: <strong className="text-amber-400">{pendingCounts.income}</strong></span>
+                )}
+                {pendingCounts.expense > 0 && (
+                  <span className="text-xs text-amber-200">הוצאות: <strong className="text-amber-400">{pendingCounts.expense}</strong></span>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="font-semibold text-xs">פורמט קובץ (להורדה)</Label>
