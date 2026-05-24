@@ -249,7 +249,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
           // detail
           autoTable(doc, { startY: y,
             head: [[t("סכום"), t("סוג"), t("תאריך")]],
-            body: rows.map((r: any) => [fmtNum(r.amount), t(r.type || "-"), format(new Date(r[kind === "income" ? "income_date" : "expense_date"]), "dd/MM/yyyy")]),
+            body: rows.map((r: any) => [fmtNum(r.amount), t(r.type || "-"), gregWithHebrew(r[kind === "income" ? "income_date" : "expense_date"])]),
             styles: { font: baseFont, halign: "right", fontSize: 9 }, headStyles: { fillColor: [148, 163, 184], halign: "right" } });
           y = (doc as any).lastAutoTable.finalY + 8;
         };
