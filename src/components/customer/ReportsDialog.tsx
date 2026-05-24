@@ -134,7 +134,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
       const detailHead = (kind: "income" | "expense") => [[t("סכום"), t("קטגוריה"), t("סוג"), t("תאריך")]];
       const detailBody = (rows: any[], dateField: string) => rows.map((r: any) => [
-        fmtNum(Number(r.amount)), t(r.category || "-"), t(r.type || "-"), format(new Date(r[dateField]), "dd/MM/yyyy"),
+        fmtNum(Number(r.amount)), t(r.category || "-"), t(r.type || "-"), gregWithHebrew(r[dateField]),
       ]);
 
       let cursorY = 38;
