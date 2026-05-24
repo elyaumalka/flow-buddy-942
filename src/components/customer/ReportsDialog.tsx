@@ -50,6 +50,9 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
   const [allCategories, setAllCategories] = useState<{ income: string[]; expense: string[] }>({ income: [], expense: [] });
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
+  const [filterPaymentMethods, setFilterPaymentMethods] = useState<string[]>([]);
+  const [filterCategories, setFilterCategories] = useState<string[]>([]);
+  const [filterKind, setFilterKind] = useState<"all" | "income" | "expense">("all");
 
   useEffect(() => {
     if (!open || !user) return;
