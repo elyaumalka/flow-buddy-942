@@ -48,7 +48,8 @@ export default function CustomerTithes() {
         <StatCard title="שולם" value={`₪${paidTithe.toLocaleString()}`} icon={Heart} iconClassName="bg-success/10 text-success" />
         <StatCard title="נותר לתשלום" value={`₪${remaining.toLocaleString()}`} icon={TrendingUp} iconClassName="bg-chart-3/10 text-chart-3" />
       </div>
-      <DataTable data={tithes} columns={columns} title="מעשרות וצדקה" addLabel="תרומה חדשה" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit} />
+      <DataTable data={tithes} columns={columns} title="מעשרות וצדקה" addLabel="תרומה חדשה" onAdd={handleAdd} onExport={() => toast({ title: "ייצוא" })} onRowClick={handleEdit}
+        filters={[{ key: "recipient", label: "למי ניתן" }]} />
       <TitheFormDialog open={dialogOpen} onOpenChange={setDialogOpen} initialData={editItem} onSave={handleSave} />
     </div>
   );
