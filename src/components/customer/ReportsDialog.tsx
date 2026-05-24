@@ -219,8 +219,8 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         let y = (doc as any).lastAutoTable.finalY + 10;
         selectedCats.forEach((c) => {
           const rows = [
-            ...filteredInc.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הכנסה"), t(r.type || "-"), format(new Date(r.income_date), "dd/MM/yyyy")]),
-            ...filteredExp.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הוצאה"), t(r.type || "-"), format(new Date(r.expense_date), "dd/MM/yyyy")]),
+            ...filteredInc.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הכנסה"), t(r.type || "-"), gregWithHebrew(r.income_date)]),
+            ...filteredExp.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הוצאה"), t(r.type || "-"), gregWithHebrew(r.expense_date)]),
           ];
           if (!rows.length) return;
           autoTable(doc, { startY: y, head: [[t("סכום"), t("סוג פעולה"), t("סוג"), t("תאריך")]], body: rows,
