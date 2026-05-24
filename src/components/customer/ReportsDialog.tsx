@@ -74,13 +74,258 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
   const toggleCat = (c: string) => setSelectedCats((p) => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
 
-  const handleGenerate = async () => {
+  const buildXlsx = async (incomeRows: any[], expenseRows: any[], titheRows: any[], label: string): Promise<Blob> => {
+    const wb = XLSX.utils.book_new();
+    const fmt = (n: number) => Number(n || 0);
+    const sumIncome = incomeRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
+    const sumExpense = expenseRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
+    const sumTithe = titheRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
+    const groupBy = (rows: any[], key: string) => {
+      const m: Record<string, number> = {};
+      rows.forEach((r: any) => { const k = r[key] || "ללא קטגוריה"; m[k] = (m[k] || 0) + Number(r.amount || 0); });
+      return m;
+    };
+
+    const addSheet = (name: string, rows: any[][]) => {
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      (ws as any)["!rtl"] = true;
+      XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
+    };
+
+    if (reportType === "general" || reportType === "tithe") {
+      const summary: any[][] = [["פריט", "סכום (₪)"]];
+      summary.push(["סך הכנסות", fmt(sumIncome)]);
+      summary.push(["סך הוצאות", fmt(sumExpense)]);
+      summary.push(["יתרה", fmt(sumIncome - sumExpense)]);
+      summary.push(["מעשר צפוי (10%)", fmt(Math.round(sumIncome * 0.1))]);
+      summary.push(["מעשר שולם", fmt(sumTithe)]);
+      summary.push(["נותר לתשלום", fmt(Math.max(Math.round(sumIncome * 0.1) - sumTithe, 0))]);
+      addSheet("סיכום", summary);
+    }
+
+    if (reportType === "general" || reportType === "income") {
+      const rows: any[][] = [["תאריך", "תאריך עברי", "סוג", "קטגוריה", "סכום", "סטטוס", "הערות"]];
+      incomeRows.forEach((r: any) => rows.push([
+        r.income_date ? format(new Date(r.income_date), "dd/MM/yyyy") : "",
+        gregWithHebrew(r.income_date).split("(")[1]?.replace(")", "") || "",
+        r.type || "", r.category || "", Number(r.amount || 0), r.status || "", r.notes || "",
+      ]));
+      addSheet("הכנסות", rows);
+    }
+
+    if (reportType === "general" || reportType === "expense") {
+      const rows: any[][] = [["תאריך", "תאריך עברי", "סוג", "קטגוריה", "סכום", "סטטוס", "הערות"]];
+      expenseRows.forEach((r: any) => rows.push([
+        r.expense_date ? format(new Date(r.expense_date), "dd/MM/yyyy") : "",
+        gregWithHebrew(r.expense_date).split("(")[1]?.replace(")", "") || "",
+        r.type || "", r.category || "", Number(r.amount || 0), r.status || "", r.notes || "",
+      ]));
+      addSheet("הוצאות", rows);
+    }
+
+    if (reportType === "general" || reportType === "tithe") {
+      const rows: any[][] = [["תאריך", "תאריך עברי", "למי ניתן", "סכום", "הערות"]];
+      titheRows.forEach((r: any) => rows.push([
+        r.tithe_date ? format(new Date(r.tithe_date), "dd/MM/yyyy") : "",
+        gregWithHebrew(r.tithe_date).split("(")[1]?.replace(")", "") || "",
+        r.recipient || "", Number(r.amount || 0), r.notes || "",
+      ]));
+      addSheet("מעשרות", rows);
+    }
+
+    if (reportType === "categories") {
+      const filteredInc = incomeRows.filter((r: any) => selectedCats.includes(r.category));
+      const filteredExp = expenseRows.filter((r: any) => selectedCats.includes(r.category));
+      const incByCat = groupBy(filteredInc, "category");
+      const expByCat = groupBy(filteredExp, "category");
+      const sum: any[][] = [["קטגוריה", "הכנסות", "הוצאות", "נטו"]];
+      selectedCats.forEach((c) => sum.push([c, fmt(incByCat[c] || 0), fmt(expByCat[c] || 0), fmt((incByCat[c] || 0) - (expByCat[c] || 0))]));
+      addSheet("סיכום קטגוריות", sum);
+      selectedCats.forEach((c) => {
+        const rows: any[][] = [["תאריך", "סוג פעולה", "סוג", "סכום", "הערות"]];
+        filteredInc.filter((r: any) => r.category === c).forEach((r: any) => rows.push([format(new Date(r.income_date), "dd/MM/yyyy"), "הכנסה", r.type || "", Number(r.amount || 0), r.notes || ""]));
+        filteredExp.filter((r: any) => r.category === c).forEach((r: any) => rows.push([format(new Date(r.expense_date), "dd/MM/yyyy"), "הוצאה", r.type || "", Number(r.amount || 0), r.notes || ""]));
+        if (rows.length > 1) addSheet(c, rows);
+      });
+    }
+
+    if (reportType === "analysis") {
+      const incByCat = groupBy(incomeRows, "category");
+      const expByCat = groupBy(expenseRows, "category");
+      const sum: any[][] = [["קטגוריה", "סוג", "סה\"כ", "מקום לשיפור", "יעד"]];
+      Object.entries(incByCat).forEach(([c, v]) => sum.push([c, "הכנסות", fmt(v), "", ""]));
+      Object.entries(expByCat).forEach(([c, v]) => sum.push([c, "הוצאות", fmt(v), "", ""]));
+      addSheet("ניתוח", sum);
+      const all = Array.from(new Set([...Object.keys(incByCat), ...Object.keys(expByCat)]));
+      all.forEach((c) => {
+        const rows: any[][] = [["תאריך", "סוג פעולה", "סוג", "סכום", "הערות"]];
+        incomeRows.filter((r: any) => (r.category || "ללא קטגוריה") === c).forEach((r: any) => rows.push([format(new Date(r.income_date), "dd/MM/yyyy"), "הכנסה", r.type || "", Number(r.amount || 0), r.notes || ""]));
+        expenseRows.filter((r: any) => (r.category || "ללא קטגוריה") === c).forEach((r: any) => rows.push([format(new Date(r.expense_date), "dd/MM/yyyy"), "הוצאה", r.type || "", Number(r.amount || 0), r.notes || ""]));
+        if (rows.length > 1) addSheet(c, rows);
+      });
+    }
+
+    const out = XLSX.write(wb, { type: "array", bookType: "xlsx" });
+    return new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  };
+
+  const buildPdf = async (incomeRows: any[], expenseRows: any[], titheRows: any[], label: string): Promise<Blob> => {
+    const fontB64 = await loadHebrewFont();
+    const doc = new jsPDF(usePassword ? { encryption: { userPassword: password, ownerPassword: password, userPermissions: ["print"] } } : {});
+    if (fontB64) { doc.addFileToVFS("Heebo.ttf", fontB64); doc.addFont("Heebo.ttf", "Heebo", "normal"); doc.setFont("Heebo"); }
+    const t = (s: string) => (fontB64 ? reverseHebrew(s) : s);
+    const baseFont = fontB64 ? "Heebo" : "helvetica";
+    const fmtNum = (n: number) => Number(n || 0).toLocaleString();
+
+    const titleMap: Record<ReportType, string> = {
+      general: "דוח כללי", tithe: "דוח מעשרות", income: "דוח הכנסות",
+      expense: "דוח הוצאות", categories: "דוח קטגוריות", analysis: "דוח ניתוח",
+    };
+    doc.setFontSize(16); doc.text(t(titleMap[reportType]), 200, 15, { align: "right" });
+    doc.setFontSize(10);
+    doc.text(t(`תקופה: ${label}`), 200, 23, { align: "right" });
+    doc.text(t(`הופק: ${gregWithHebrew(new Date())}`), 200, 29, { align: "right" });
+
+    const sumIncome = incomeRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
+    const sumExpense = expenseRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
+    const sumTithe = titheRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
+    const balance = sumIncome - sumExpense;
+
+    const groupBy = (rows: any[], key: string) => {
+      const m: Record<string, number> = {};
+      rows.forEach((r: any) => { const k = r[key] || "ללא קטגוריה"; m[k] = (m[k] || 0) + Number(r.amount || 0); });
+      return m;
+    };
+
+    const drawCompareBar = (y: number, title: string, parts: { label: string; value: number; color: [number, number, number] }[]) => {
+      doc.setFontSize(11); doc.text(t(title), 200, y, { align: "right" });
+      const max = Math.max(1, ...parts.map(p => p.value));
+      let yy = y + 4;
+      parts.forEach((p) => {
+        const w = (p.value / max) * 140;
+        doc.setFillColor(...p.color); doc.rect(60, yy, w, 6, "F");
+        doc.setFontSize(9);
+        doc.text(t(`${p.label}: ${fmtNum(p.value)} ₪`), 200, yy + 4.5, { align: "right" });
+        yy += 10;
+      });
+      return yy;
+    };
+
+    const detailHead = (_kind: "income" | "expense") => [[t("סכום"), t("קטגוריה"), t("סוג"), t("תאריך")]];
+    const detailBody = (rows: any[], dateField: string) => rows.map((r: any) => [
+      fmtNum(Number(r.amount)), t(r.category || "-"), t(r.type || "-"), gregWithHebrew(r[dateField]),
+    ]);
+
+    let cursorY = 38;
+
+    if (reportType === "general") {
+      autoTable(doc, { startY: cursorY, head: [[t("סכום (₪)"), t("פריט")]],
+        body: [[fmtNum(sumIncome), t("סך הכנסות")], [fmtNum(sumExpense), t("סך הוצאות")], [fmtNum(balance), t("יתרה / תזרים")], [fmtNum(sumTithe), t("מעשרות שולמו")]],
+        styles: { font: baseFont, halign: "right", fontSize: 11 }, headStyles: { fillColor: [22, 78, 99], halign: "right" } });
+      cursorY = (doc as any).lastAutoTable.finalY + 8;
+      cursorY = drawCompareBar(cursorY, "השוואה ויזואלית", [
+        { label: "הכנסות", value: sumIncome, color: [34, 197, 94] },
+        { label: "הוצאות", value: sumExpense, color: [239, 68, 68] },
+        { label: "מעשרות", value: sumTithe, color: [99, 102, 241] },
+      ]);
+      const incByCat = groupBy(incomeRows, "category");
+      const expByCat = groupBy(expenseRows, "category");
+      const incEntries = Object.entries(incByCat).sort((a, b) => b[1] - a[1]);
+      const expEntries = Object.entries(expByCat).sort((a, b) => b[1] - a[1]);
+      if (incEntries.length) cursorY = drawCompareBar(cursorY + 4, "הכנסות לפי קטגוריה", incEntries.map(([k, v]) => ({ label: k, value: v, color: [34, 197, 94] })));
+      if (expEntries.length) cursorY = drawCompareBar(cursorY + 4, "הוצאות לפי קטגוריה", expEntries.map(([k, v]) => ({ label: k, value: v, color: [239, 68, 68] })));
+      doc.addPage();
+      autoTable(doc, { startY: 20, head: detailHead("income"), body: detailBody(incomeRows, "income_date"),
+        styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [22, 163, 74], halign: "right" },
+        didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט הכנסות"), 200, d.settings.startY! - 4, { align: "right" }); } });
+      autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10, head: detailHead("expense"), body: detailBody(expenseRows, "expense_date"),
+        styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [220, 38, 38], halign: "right" },
+        didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט הוצאות"), 200, d.settings.startY! - 4, { align: "right" }); } });
+      if (titheRows.length) {
+        autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
+          head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
+          body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), gregWithHebrew(r.tithe_date)]),
+          styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [99, 102, 241], halign: "right" },
+          didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט מעשרות"), 200, d.settings.startY! - 4, { align: "right" }); } });
+      }
+    } else if (reportType === "tithe") {
+      autoTable(doc, { startY: cursorY, head: [[t("סכום (₪)"), t("פריט")]],
+        body: [[fmtNum(sumIncome), t("סך הכנסות")], [fmtNum(Math.round(sumIncome * 0.1)), t("מעשר צפוי (10%)")], [fmtNum(sumTithe), t("מעשר שולם")], [fmtNum(Math.max(Math.round(sumIncome * 0.1) - sumTithe, 0)), t("נותר לתשלום")]],
+        styles: { font: baseFont, halign: "right", fontSize: 11 }, headStyles: { fillColor: [99, 102, 241], halign: "right" } });
+      autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
+        head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
+        body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), gregWithHebrew(r.tithe_date)]),
+        styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [99, 102, 241], halign: "right" } });
+    } else if (reportType === "income") {
+      autoTable(doc, { startY: cursorY, head: detailHead("income"), body: detailBody(incomeRows, "income_date"),
+        styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [22, 163, 74], halign: "right" } });
+      const finalY = (doc as any).lastAutoTable.finalY + 8;
+      doc.setFontSize(11); doc.text(t(`סך הכנסות: ${fmtNum(sumIncome)} ₪`), 200, finalY, { align: "right" });
+    } else if (reportType === "expense") {
+      autoTable(doc, { startY: cursorY, head: detailHead("expense"), body: detailBody(expenseRows, "expense_date"),
+        styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [220, 38, 38], halign: "right" } });
+      const finalY = (doc as any).lastAutoTable.finalY + 8;
+      doc.setFontSize(11); doc.text(t(`סך הוצאות: ${fmtNum(sumExpense)} ₪`), 200, finalY, { align: "right" });
+    } else if (reportType === "categories") {
+      const filteredInc = incomeRows.filter((r: any) => selectedCats.includes(r.category));
+      const filteredExp = expenseRows.filter((r: any) => selectedCats.includes(r.category));
+      const incByCat = groupBy(filteredInc, "category");
+      const expByCat = groupBy(filteredExp, "category");
+      const summary: any[] = [];
+      selectedCats.forEach((c) => { summary.push([fmtNum((incByCat[c] || 0) - (expByCat[c] || 0)), fmtNum(expByCat[c] || 0), fmtNum(incByCat[c] || 0), t(c)]); });
+      const totalIn = Object.values(incByCat).reduce((a, b) => a + b, 0);
+      const totalEx = Object.values(expByCat).reduce((a, b) => a + b, 0);
+      summary.push([fmtNum(totalIn - totalEx), fmtNum(totalEx), fmtNum(totalIn), t("סה״כ")]);
+      autoTable(doc, { startY: cursorY, head: [[t("נטו"), t("הוצאות"), t("הכנסות"), t("קטגוריה")]],
+        body: summary, styles: { font: baseFont, halign: "right", fontSize: 11 },
+        headStyles: { fillColor: [22, 78, 99], halign: "right" } });
+      let y = (doc as any).lastAutoTable.finalY + 10;
+      selectedCats.forEach((c) => {
+        const rows = [
+          ...filteredInc.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הכנסה"), t(r.type || "-"), gregWithHebrew(r.income_date)]),
+          ...filteredExp.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הוצאה"), t(r.type || "-"), gregWithHebrew(r.expense_date)]),
+        ];
+        if (!rows.length) return;
+        autoTable(doc, { startY: y, head: [[t("סכום"), t("סוג פעולה"), t("סוג"), t("תאריך")]], body: rows,
+          styles: { font: baseFont, halign: "right", fontSize: 9 }, headStyles: { fillColor: [71, 85, 105], halign: "right" },
+          didDrawPage: (d) => { doc.setFontSize(11); doc.text(t(c), 200, d.settings.startY! - 4, { align: "right" }); } });
+        y = (doc as any).lastAutoTable.finalY + 8;
+      });
+    } else if (reportType === "analysis") {
+      const incByCat = groupBy(incomeRows, "category");
+      const expByCat = groupBy(expenseRows, "category");
+      let y = cursorY;
+      const renderSection = (cat: string, kind: "income" | "expense") => {
+        const sum = kind === "income" ? (incByCat[cat] || 0) : (expByCat[cat] || 0);
+        const rows = (kind === "income" ? incomeRows : expenseRows).filter((r: any) => (r.category || "ללא קטגוריה") === cat);
+        if (!rows.length) return;
+        autoTable(doc, { startY: y,
+          head: [[t("יעד"), t("מקום לשיפור"), t("סה״כ ₪"), t(`${kind === "income" ? "הכנסות" : "הוצאות"} — ${cat}`)]],
+          body: [["", "", fmtNum(sum), ""]],
+          styles: { font: baseFont, halign: "right", fontSize: 12, minCellHeight: 14 },
+          headStyles: { fillColor: kind === "income" ? [22, 163, 74] : [220, 38, 38], halign: "right", fontSize: 12 },
+          columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 38 } } });
+        y = (doc as any).lastAutoTable.finalY + 2;
+        autoTable(doc, { startY: y,
+          head: [[t("סכום"), t("סוג"), t("תאריך")]],
+          body: rows.map((r: any) => [fmtNum(r.amount), t(r.type || "-"), gregWithHebrew(r[kind === "income" ? "income_date" : "expense_date"])]),
+          styles: { font: baseFont, halign: "right", fontSize: 9 }, headStyles: { fillColor: [148, 163, 184], halign: "right" } });
+        y = (doc as any).lastAutoTable.finalY + 8;
+      };
+      Object.keys(incByCat).forEach((c) => renderSection(c, "income"));
+      Object.keys(expByCat).forEach((c) => renderSection(c, "expense"));
+    }
+
+    return doc.output("blob");
+  };
+
+  const handleAction = async (delivery: "download" | "email") => {
     if (!user) return;
     if (period === "range" && (!rangeStart || !rangeEnd)) { toast({ title: "יש לבחור טווח תאריכים", variant: "destructive" }); return; }
-    if (usePassword && !password) { toast({ title: "יש להזין סיסמא", variant: "destructive" }); return; }
+    if (usePassword && fileFormat === "pdf" && !password) { toast({ title: "יש להזין סיסמא", variant: "destructive" }); return; }
     if (reportType === "categories" && selectedCats.length === 0) { toast({ title: "יש לבחור לפחות קטגוריה אחת", variant: "destructive" }); return; }
 
-    setLoading(true);
+    setLoading(delivery);
     try {
       const { from, to, label } = getRange();
       const fromIso = from.toISOString(); const toIso = to.toISOString();
@@ -93,181 +338,45 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
       const expenseRows = expensesRes.data ?? [];
       const titheRows = tithesRes.data ?? [];
 
-      const fontB64 = await loadHebrewFont();
-      const doc = new jsPDF(usePassword ? { encryption: { userPassword: password, ownerPassword: password, userPermissions: ["print"] } } : {});
-      if (fontB64) { doc.addFileToVFS("Heebo.ttf", fontB64); doc.addFont("Heebo.ttf", "Heebo", "normal"); doc.setFont("Heebo"); }
-      const t = (s: string) => (fontB64 ? reverseHebrew(s) : s);
-      const baseFont = fontB64 ? "Heebo" : "helvetica";
-      const fmtNum = (n: number) => Number(n || 0).toLocaleString();
+      const safeLabel = label.replace(/[/\\: ]/g, "-");
 
-      const titleMap: Record<ReportType, string> = {
-        general: "דוח כללי", tithe: "דוח מעשרות", income: "דוח הכנסות",
-        expense: "דוח הוצאות", categories: "דוח קטגוריות", analysis: "דוח ניתוח",
-      };
-      doc.setFontSize(16); doc.text(t(titleMap[reportType]), 200, 15, { align: "right" });
-      doc.setFontSize(10);
-      doc.text(t(`תקופה: ${label}`), 200, 23, { align: "right" });
-      doc.text(t(`הופק: ${gregWithHebrew(new Date())}`), 200, 29, { align: "right" });
-
-      const sumIncome = incomeRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
-      const sumExpense = expenseRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
-      const sumTithe = titheRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
-      const balance = sumIncome - sumExpense;
-
-      const groupBy = (rows: any[], key: string) => {
-        const m: Record<string, number> = {};
-        rows.forEach((r: any) => { const k = r[key] || "ללא קטגוריה"; m[k] = (m[k] || 0) + Number(r.amount || 0); });
-        return m;
-      };
-
-      // helper: draw simple horizontal bar comparison
-      const drawCompareBar = (y: number, title: string, parts: { label: string; value: number; color: [number, number, number] }[]) => {
-        doc.setFontSize(11); doc.text(t(title), 200, y, { align: "right" });
-        const max = Math.max(1, ...parts.map(p => p.value));
-        let yy = y + 4;
-        parts.forEach((p) => {
-          const w = (p.value / max) * 140;
-          doc.setFillColor(...p.color); doc.rect(60, yy, w, 6, "F");
-          doc.setFontSize(9);
-          doc.text(t(`${p.label}: ${fmtNum(p.value)} ₪`), 200, yy + 4.5, { align: "right" });
-          yy += 10;
-        });
-        return yy;
-      };
-
-      const detailHead = (kind: "income" | "expense") => [[t("סכום"), t("קטגוריה"), t("סוג"), t("תאריך")]];
-      const detailBody = (rows: any[], dateField: string) => rows.map((r: any) => [
-        fmtNum(Number(r.amount)), t(r.category || "-"), t(r.type || "-"), gregWithHebrew(r[dateField]),
-      ]);
-
-      let cursorY = 38;
-
-      if (reportType === "general") {
-        // summary block
-        autoTable(doc, {
-          startY: cursorY,
-          head: [[t("סכום (₪)"), t("פריט")]],
-          body: [
-            [fmtNum(sumIncome), t("סך הכנסות")],
-            [fmtNum(sumExpense), t("סך הוצאות")],
-            [fmtNum(balance), t("יתרה / תזרים")],
-            [fmtNum(sumTithe), t("מעשרות שולמו")],
-          ],
-          styles: { font: baseFont, halign: "right", fontSize: 11 },
-          headStyles: { fillColor: [22, 78, 99], halign: "right" },
-        });
-        cursorY = (doc as any).lastAutoTable.finalY + 8;
-        cursorY = drawCompareBar(cursorY, "השוואה ויזואלית", [
-          { label: "הכנסות", value: sumIncome, color: [34, 197, 94] },
-          { label: "הוצאות", value: sumExpense, color: [239, 68, 68] },
-          { label: "מעשרות", value: sumTithe, color: [99, 102, 241] },
-        ]);
-        // category breakdown bars
-        const incByCat = groupBy(incomeRows, "category");
-        const expByCat = groupBy(expenseRows, "category");
-        const incEntries = Object.entries(incByCat).sort((a, b) => b[1] - a[1]);
-        const expEntries = Object.entries(expByCat).sort((a, b) => b[1] - a[1]);
-        if (incEntries.length) cursorY = drawCompareBar(cursorY + 4, "הכנסות לפי קטגוריה", incEntries.map(([k, v]) => ({ label: k, value: v, color: [34, 197, 94] })));
-        if (expEntries.length) cursorY = drawCompareBar(cursorY + 4, "הוצאות לפי קטגוריה", expEntries.map(([k, v]) => ({ label: k, value: v, color: [239, 68, 68] })));
-
-        // details
-        doc.addPage();
-        autoTable(doc, { startY: 20, head: detailHead("income"), body: detailBody(incomeRows, "income_date"),
-          styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [22, 163, 74], halign: "right" },
-          didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט הכנסות"), 200, d.settings.startY! - 4, { align: "right" }); } });
-        autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10, head: detailHead("expense"), body: detailBody(expenseRows, "expense_date"),
-          styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [220, 38, 38], halign: "right" },
-          didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט הוצאות"), 200, d.settings.startY! - 4, { align: "right" }); } });
-        if (titheRows.length) {
-          autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
-            head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
-            body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), gregWithHebrew(r.tithe_date)]),
-            styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [99, 102, 241], halign: "right" },
-            didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט מעשרות"), 200, d.settings.startY! - 4, { align: "right" }); } });
-        }
-      } else if (reportType === "tithe") {
-        autoTable(doc, { startY: cursorY,
-          head: [[t("סכום (₪)"), t("פריט")]],
-          body: [[fmtNum(sumIncome), t("סך הכנסות")], [fmtNum(Math.round(sumIncome * 0.1)), t("מעשר צפוי (10%)")], [fmtNum(sumTithe), t("מעשר שולם")], [fmtNum(Math.max(Math.round(sumIncome * 0.1) - sumTithe, 0)), t("נותר לתשלום")]],
-          styles: { font: baseFont, halign: "right", fontSize: 11 }, headStyles: { fillColor: [99, 102, 241], halign: "right" } });
-        autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
-          head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
-          body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), gregWithHebrew(r.tithe_date)]),
-          styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [99, 102, 241], halign: "right" } });
-      } else if (reportType === "income") {
-        autoTable(doc, { startY: cursorY, head: detailHead("income"), body: detailBody(incomeRows, "income_date"),
-          styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [22, 163, 74], halign: "right" } });
-        const finalY = (doc as any).lastAutoTable.finalY + 8;
-        doc.setFontSize(11); doc.text(t(`סך הכנסות: ${fmtNum(sumIncome)} ₪`), 200, finalY, { align: "right" });
-      } else if (reportType === "expense") {
-        autoTable(doc, { startY: cursorY, head: detailHead("expense"), body: detailBody(expenseRows, "expense_date"),
-          styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [220, 38, 38], halign: "right" } });
-        const finalY = (doc as any).lastAutoTable.finalY + 8;
-        doc.setFontSize(11); doc.text(t(`סך הוצאות: ${fmtNum(sumExpense)} ₪`), 200, finalY, { align: "right" });
-      } else if (reportType === "categories") {
-        const filteredInc = incomeRows.filter((r: any) => selectedCats.includes(r.category));
-        const filteredExp = expenseRows.filter((r: any) => selectedCats.includes(r.category));
-        const incByCat = groupBy(filteredInc, "category");
-        const expByCat = groupBy(filteredExp, "category");
-        const summary: any[] = [];
-        selectedCats.forEach((c) => { summary.push([fmtNum((incByCat[c] || 0) - (expByCat[c] || 0)), fmtNum(expByCat[c] || 0), fmtNum(incByCat[c] || 0), t(c)]); });
-        const totalIn = Object.values(incByCat).reduce((a, b) => a + b, 0);
-        const totalEx = Object.values(expByCat).reduce((a, b) => a + b, 0);
-        summary.push([fmtNum(totalIn - totalEx), fmtNum(totalEx), fmtNum(totalIn), t("סה״כ")]);
-        autoTable(doc, { startY: cursorY,
-          head: [[t("נטו"), t("הוצאות"), t("הכנסות"), t("קטגוריה")]],
-          body: summary, styles: { font: baseFont, halign: "right", fontSize: 11 },
-          headStyles: { fillColor: [22, 78, 99], halign: "right" } });
-        // details per category
-        let y = (doc as any).lastAutoTable.finalY + 10;
-        selectedCats.forEach((c) => {
-          const rows = [
-            ...filteredInc.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הכנסה"), t(r.type || "-"), gregWithHebrew(r.income_date)]),
-            ...filteredExp.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הוצאה"), t(r.type || "-"), gregWithHebrew(r.expense_date)]),
-          ];
-          if (!rows.length) return;
-          autoTable(doc, { startY: y, head: [[t("סכום"), t("סוג פעולה"), t("סוג"), t("תאריך")]], body: rows,
-            styles: { font: baseFont, halign: "right", fontSize: 9 }, headStyles: { fillColor: [71, 85, 105], halign: "right" },
-            didDrawPage: (d) => { doc.setFontSize(11); doc.text(t(c), 200, d.settings.startY! - 4, { align: "right" }); } });
-          y = (doc as any).lastAutoTable.finalY + 8;
-        });
-      } else if (reportType === "analysis") {
-        const incByCat = groupBy(incomeRows, "category");
-        const expByCat = groupBy(expenseRows, "category");
-        const allCats = Array.from(new Set([...Object.keys(incByCat), ...Object.keys(expByCat)]));
-        let y = cursorY;
-        const renderSection = (cat: string, kind: "income" | "expense") => {
-          const sum = kind === "income" ? (incByCat[cat] || 0) : (expByCat[cat] || 0);
-          const rows = (kind === "income" ? incomeRows : expenseRows).filter((r: any) => (r.category || "ללא קטגוריה") === cat);
-          if (!rows.length) return;
-          // big summary header
-          autoTable(doc, { startY: y,
-            head: [[t("יעד"), t("מקום לשיפור"), t("סה״כ ₪"), t(`${kind === "income" ? "הכנסות" : "הוצאות"} — ${cat}`)]],
-            body: [["", "", fmtNum(sum), ""]],
-            styles: { font: baseFont, halign: "right", fontSize: 12, minCellHeight: 14 },
-            headStyles: { fillColor: kind === "income" ? [22, 163, 74] : [220, 38, 38], halign: "right", fontSize: 12 },
-            columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 38 } },
-          });
-          y = (doc as any).lastAutoTable.finalY + 2;
-          // detail
-          autoTable(doc, { startY: y,
-            head: [[t("סכום"), t("סוג"), t("תאריך")]],
-            body: rows.map((r: any) => [fmtNum(r.amount), t(r.type || "-"), gregWithHebrew(r[kind === "income" ? "income_date" : "expense_date"])]),
-            styles: { font: baseFont, halign: "right", fontSize: 9 }, headStyles: { fillColor: [148, 163, 184], halign: "right" } });
-          y = (doc as any).lastAutoTable.finalY + 8;
-        };
-        // incomes first
-        Object.keys(incByCat).forEach((c) => renderSection(c, "income"));
-        Object.keys(expByCat).forEach((c) => renderSection(c, "expense"));
+      // Build files: for email send both formats; for download only the chosen one
+      const formats: FileFormat[] = delivery === "email" ? ["pdf", "xlsx"] : [fileFormat];
+      const files: { name: string; blob: Blob; ext: FileFormat }[] = [];
+      for (const fmt of formats) {
+        const blob = fmt === "pdf"
+          ? await buildPdf(incomeRows, expenseRows, titheRows, label)
+          : await buildXlsx(incomeRows, expenseRows, titheRows, label);
+        files.push({ name: `${reportType}_${safeLabel}.${fmt}`, blob, ext: fmt });
       }
 
-      const fileName = `${reportType}_${label.replace(/[/\\: ]/g, "-")}.pdf`;
-      doc.save(fileName);
-      toast({ title: "הדוח הופק בהצלחה" });
+      if (delivery === "download") {
+        const f = files[0];
+        const url = URL.createObjectURL(f.blob);
+        const a = document.createElement("a"); a.href = url; a.download = f.name; a.click();
+        URL.revokeObjectURL(url);
+        toast({ title: "הדוח הופק בהצלחה" });
+      } else {
+        // upload both to storage and open mailto with signed links
+        const links: string[] = [];
+        for (const f of files) {
+          const path = `${user.id}/${Date.now()}-${f.name}`;
+          const up = await supabase.storage.from("reports").upload(path, f.blob, { contentType: f.blob.type, upsert: true });
+          if (up.error) throw up.error;
+          const signed = await supabase.storage.from("reports").createSignedUrl(path, 60 * 60 * 24 * 7);
+          if (signed.error) throw signed.error;
+          links.push(`${f.ext.toUpperCase()}: ${signed.data.signedUrl}`);
+        }
+        const subject = encodeURIComponent(`דוח: ${reportType} — ${label}`);
+        const body = encodeURIComponent(`שלום,\n\nמצורפים קישורי הורדה לדוח (תקפים ל-7 ימים):\n\n${links.join("\n\n")}\n\nבברכה`);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        toast({ title: "נפתח חלון מייל", description: "הקבצים הועלו וקישורי הורדה צורפו" });
+      }
+
       onOpenChange(false);
     } catch (e: any) {
       toast({ title: "שגיאה בהפקת הדוח", description: e.message, variant: "destructive" });
-    } finally { setLoading(false); }
+    } finally { setLoading(null); }
   };
 
   const allCats = Array.from(new Set([...allCategories.income, ...allCategories.expense]));
