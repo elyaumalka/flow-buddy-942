@@ -212,6 +212,8 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
     const sumExpense = expenseRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
     const sumTithe = titheRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
     const balance = sumIncome - sumExpense;
+    const incPendingCount = incomeRows.filter((r: any) => r.status !== "מאושר").length;
+    const expPendingCount = expenseRows.filter((r: any) => r.status !== "מאושר").length;
 
     const groupBy = (rows: any[], key: string) => {
       const m: Record<string, number> = {};
