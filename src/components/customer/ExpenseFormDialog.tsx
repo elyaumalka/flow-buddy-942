@@ -56,6 +56,19 @@ export function ExpenseFormDialog({ open, onOpenChange, initialData, onSave }: P
                 <SelectContent className="rounded-xl"><SelectItem value="מאושר">מאושר</SelectItem><SelectItem value="לאישור">לאישור</SelectItem><SelectItem value="צפוי">צפוי</SelectItem></SelectContent>
               </Select>
             </div>
+            <div className="space-y-2 col-span-2">
+              <Label className="font-semibold text-xs">אופן ביצוע</Label>
+              <Select value={form.payment_method} onValueChange={(v) => set("payment_method", v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="אשראי">אשראי</SelectItem>
+                  <SelectItem value="מזומן">מזומן</SelectItem>
+                  <SelectItem value="בנקאי">בנקאי</SelectItem>
+                  <SelectItem value="אחר">אחר</SelectItem>
+                  <SelectItem value="ללא">ללא</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex gap-2 justify-end pt-3 border-t border-border/50">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">ביטול</Button>
