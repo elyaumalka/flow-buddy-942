@@ -12,8 +12,7 @@ import logo from "@/assets/logo.jpg";
 
 const menuItems = [
   { title: "דשבורד", url: "/dashboard", icon: LayoutDashboard },
-  { title: "הכנסות", url: "/dashboard/income", icon: TrendingUp },
-  { title: "הוצאות", url: "/dashboard/expenses", icon: TrendingDown },
+  { title: "עובר ושב", url: "/dashboard/cashflow", icon: ArrowLeftRight },
   { title: "יעדים", url: "/dashboard/goals", icon: Target },
   { title: "סטטיסטיקות", url: "/dashboard/statistics", icon: BarChart3 },
   { title: "מעשרות", url: "/dashboard/tithes", icon: Heart },
