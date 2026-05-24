@@ -53,6 +53,8 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
   useEffect(() => {
     if (!open || !user) return;
+    if (!rangeStart) setRangeStart(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+    if (!rangeEnd) setRangeEnd(format(endOfMonth(new Date()), "yyyy-MM-dd"));
     (async () => {
       const [i, e] = await Promise.all([
         supabase.from("income").select("category").eq("user_id", user.id),
@@ -432,7 +434,13 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
           <div className="space-y-2">
             <Label className="font-semibold text-xs flex items-center gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> תקופת הדוח</Label>
-            <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+            <Select value={period} onValueChange={(v) => {
+              const p = v as Period; setPeriod(p);
+              const now = new Date();
+              if (p === "monthly") { setRangeStart(format(startOfMonth(now), "yyyy-MM-dd")); setRangeEnd(format(endOfMonth(now), "yyyy-MM-dd")); }
+              else if (p === "quarterly") { setRangeStart(format(startOfQuarter(now), "yyyy-MM-dd")); setRangeEnd(format(endOfQuarter(now), "yyyy-MM-dd")); }
+              else if (p === "yearly") { setRangeStart(format(startOfYear(now), "yyyy-MM-dd")); setRangeEnd(format(endOfYear(now), "yyyy-MM-dd")); }
+            }}>
               <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
               <SelectContent className="rounded-xl">
                 <SelectItem value="monthly">חודשי (חודש נוכחי)</SelectItem>
@@ -443,12 +451,10 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
             </Select>
           </div>
 
-          {period === "range" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2"><Label className="font-semibold text-xs">מתאריך</Label><Input type="date" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="rounded-xl" dir="ltr" /></div>
-              <div className="space-y-2"><Label className="font-semibold text-xs">עד תאריך</Label><Input type="date" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="rounded-xl" dir="ltr" /></div>
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2"><Label className="font-semibold text-xs">מתאריך</Label><Input type="date" value={rangeStart} onChange={(e) => { setRangeStart(e.target.value); setPeriod("range"); }} className="rounded-xl" dir="ltr" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">עד תאריך</Label><Input type="date" value={rangeEnd} onChange={(e) => { setRangeEnd(e.target.value); setPeriod("range"); }} className="rounded-xl" dir="ltr" /></div>
+          </div>
 
           <div className="space-y-2">
             <Label className="font-semibold text-xs">פורמט קובץ (להורדה)</Label>
