@@ -49,6 +49,10 @@ export function GoalFormDialog({ open, onOpenChange, initialData, onSave }: Prop
                 <SelectContent className="rounded-xl"><SelectItem value="income">הכנסות</SelectItem><SelectItem value="expense">הוצאות</SelectItem><SelectItem value="savings">חיסכון</SelectItem></SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label className="font-semibold text-xs">משך להשגת היעד (חודשים)</Label>
+              <Input type="number" min={1} step={1} value={form.duration_months} onChange={(e) => set("duration_months", Math.max(1, Number(e.target.value)))} required className="rounded-xl" dir="ltr" />
+            </div>
           </div>
           <div className="flex gap-2 justify-end pt-3 border-t border-border/50">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">ביטול</Button>
