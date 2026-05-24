@@ -445,12 +445,10 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
             </Select>
           </div>
 
-          {period === "range" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2"><Label className="font-semibold text-xs">מתאריך</Label><Input type="date" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="rounded-xl" dir="ltr" /></div>
-              <div className="space-y-2"><Label className="font-semibold text-xs">עד תאריך</Label><Input type="date" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="rounded-xl" dir="ltr" /></div>
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2"><Label className="font-semibold text-xs">מתאריך</Label><Input type="date" value={rangeStart} onChange={(e) => { setRangeStart(e.target.value); setPeriod("range"); }} className="rounded-xl" dir="ltr" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">עד תאריך</Label><Input type="date" value={rangeEnd} onChange={(e) => { setRangeEnd(e.target.value); setPeriod("range"); }} className="rounded-xl" dir="ltr" /></div>
+          </div>
 
           <div className="space-y-2">
             <Label className="font-semibold text-xs">פורמט קובץ (להורדה)</Label>
