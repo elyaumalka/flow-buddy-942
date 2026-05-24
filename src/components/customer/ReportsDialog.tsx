@@ -434,7 +434,13 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
           <div className="space-y-2">
             <Label className="font-semibold text-xs flex items-center gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> תקופת הדוח</Label>
-            <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+            <Select value={period} onValueChange={(v) => {
+              const p = v as Period; setPeriod(p);
+              const now = new Date();
+              if (p === "monthly") { setRangeStart(format(startOfMonth(now), "yyyy-MM-dd")); setRangeEnd(format(endOfMonth(now), "yyyy-MM-dd")); }
+              else if (p === "quarterly") { setRangeStart(format(startOfQuarter(now), "yyyy-MM-dd")); setRangeEnd(format(endOfQuarter(now), "yyyy-MM-dd")); }
+              else if (p === "yearly") { setRangeStart(format(startOfYear(now), "yyyy-MM-dd")); setRangeEnd(format(endOfYear(now), "yyyy-MM-dd")); }
+            }}>
               <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
               <SelectContent className="rounded-xl">
                 <SelectItem value="monthly">חודשי (חודש נוכחי)</SelectItem>
