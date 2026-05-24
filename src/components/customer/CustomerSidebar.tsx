@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, TrendingUp, TrendingDown, Target, BarChart3, Heart, Settings,
+  LayoutDashboard, ArrowLeftRight, Target, BarChart3, Heart, Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
