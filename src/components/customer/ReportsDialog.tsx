@@ -10,6 +10,7 @@ import { FileText, Download, Lock, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { gregWithHebrew } from "@/lib/hebrewDate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
