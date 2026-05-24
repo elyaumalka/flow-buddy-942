@@ -104,7 +104,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
       doc.setFontSize(16); doc.text(t(titleMap[reportType]), 200, 15, { align: "right" });
       doc.setFontSize(10);
       doc.text(t(`תקופה: ${label}`), 200, 23, { align: "right" });
-      doc.text(t(`הופק: ${format(new Date(), "dd/MM/yyyy HH:mm")}`), 200, 29, { align: "right" });
+      doc.text(t(`הופק: ${gregWithHebrew(new Date())}`), 200, 29, { align: "right" });
 
       const sumIncome = incomeRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
       const sumExpense = expenseRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
