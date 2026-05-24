@@ -10,6 +10,7 @@ import { FileText, Download, Lock, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { gregWithHebrew } from "@/lib/hebrewDate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
@@ -103,7 +104,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
       doc.setFontSize(16); doc.text(t(titleMap[reportType]), 200, 15, { align: "right" });
       doc.setFontSize(10);
       doc.text(t(`תקופה: ${label}`), 200, 23, { align: "right" });
-      doc.text(t(`הופק: ${format(new Date(), "dd/MM/yyyy HH:mm")}`), 200, 29, { align: "right" });
+      doc.text(t(`הופק: ${gregWithHebrew(new Date())}`), 200, 29, { align: "right" });
 
       const sumIncome = incomeRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
       const sumExpense = expenseRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
@@ -133,7 +134,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
       const detailHead = (kind: "income" | "expense") => [[t("סכום"), t("קטגוריה"), t("סוג"), t("תאריך")]];
       const detailBody = (rows: any[], dateField: string) => rows.map((r: any) => [
-        fmtNum(Number(r.amount)), t(r.category || "-"), t(r.type || "-"), format(new Date(r[dateField]), "dd/MM/yyyy"),
+        fmtNum(Number(r.amount)), t(r.category || "-"), t(r.type || "-"), gregWithHebrew(r[dateField]),
       ]);
 
       let cursorY = 38;
@@ -177,7 +178,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         if (titheRows.length) {
           autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
             head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
-            body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), format(new Date(r.tithe_date), "dd/MM/yyyy")]),
+            body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), gregWithHebrew(r.tithe_date)]),
             styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [99, 102, 241], halign: "right" },
             didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט מעשרות"), 200, d.settings.startY! - 4, { align: "right" }); } });
         }
@@ -188,7 +189,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
           styles: { font: baseFont, halign: "right", fontSize: 11 }, headStyles: { fillColor: [99, 102, 241], halign: "right" } });
         autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
           head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
-          body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), format(new Date(r.tithe_date), "dd/MM/yyyy")]),
+          body: titheRows.map((r: any) => [fmtNum(r.amount), t(r.recipient || "-"), t(r.notes || "-"), gregWithHebrew(r.tithe_date)]),
           styles: { font: baseFont, halign: "right", fontSize: 10 }, headStyles: { fillColor: [99, 102, 241], halign: "right" } });
       } else if (reportType === "income") {
         autoTable(doc, { startY: cursorY, head: detailHead("income"), body: detailBody(incomeRows, "income_date"),
@@ -218,8 +219,8 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         let y = (doc as any).lastAutoTable.finalY + 10;
         selectedCats.forEach((c) => {
           const rows = [
-            ...filteredInc.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הכנסה"), t(r.type || "-"), format(new Date(r.income_date), "dd/MM/yyyy")]),
-            ...filteredExp.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הוצאה"), t(r.type || "-"), format(new Date(r.expense_date), "dd/MM/yyyy")]),
+            ...filteredInc.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הכנסה"), t(r.type || "-"), gregWithHebrew(r.income_date)]),
+            ...filteredExp.filter((r: any) => r.category === c).map((r: any) => [fmtNum(r.amount), t("הוצאה"), t(r.type || "-"), gregWithHebrew(r.expense_date)]),
           ];
           if (!rows.length) return;
           autoTable(doc, { startY: y, head: [[t("סכום"), t("סוג פעולה"), t("סוג"), t("תאריך")]], body: rows,
@@ -248,7 +249,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
           // detail
           autoTable(doc, { startY: y,
             head: [[t("סכום"), t("סוג"), t("תאריך")]],
-            body: rows.map((r: any) => [fmtNum(r.amount), t(r.type || "-"), format(new Date(r[kind === "income" ? "income_date" : "expense_date"]), "dd/MM/yyyy")]),
+            body: rows.map((r: any) => [fmtNum(r.amount), t(r.type || "-"), gregWithHebrew(r[kind === "income" ? "income_date" : "expense_date"])]),
             styles: { font: baseFont, halign: "right", fontSize: 9 }, headStyles: { fillColor: [148, 163, 184], halign: "right" } });
           y = (doc as any).lastAutoTable.finalY + 8;
         };
