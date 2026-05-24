@@ -15,6 +15,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
+import heeboFontUrl from "@/assets/fonts/Heebo-Regular.ttf?url";
 
 type ReportType = "general" | "tithe" | "income" | "expense" | "categories" | "analysis";
 type Period = "monthly" | "quarterly" | "yearly" | "range";
@@ -22,12 +23,11 @@ type FileFormat = "pdf" | "xlsx";
 
 interface Props { open: boolean; onOpenChange: (open: boolean) => void; }
 
-const FONT_URL = "https://cdn.jsdelivr.net/gh/google/fonts/ofl/heebo/static/Heebo-Regular.ttf";
 let cachedFont: string | null = null;
 async function loadHebrewFont(): Promise<string | null> {
   if (cachedFont) return cachedFont;
   try {
-    const res = await fetch(FONT_URL); if (!res.ok) return null;
+    const res = await fetch(heeboFontUrl); if (!res.ok) return null;
     const buf = await res.arrayBuffer();
     let binary = ""; const bytes = new Uint8Array(buf);
     for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
