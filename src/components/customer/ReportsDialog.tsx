@@ -53,6 +53,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
   const [filterPaymentMethods, setFilterPaymentMethods] = useState<string[]>([]);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [filterKind, setFilterKind] = useState<"all" | "income" | "expense">("all");
+  const [pendingCounts, setPendingCounts] = useState({ income: 0, expense: 0 });
 
   useEffect(() => {
     if (!open || !user) return;
