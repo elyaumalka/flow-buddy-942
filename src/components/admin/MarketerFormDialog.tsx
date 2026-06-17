@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Megaphone, Save } from "lucide-react";
+import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 
 export interface MarketerFormData {
   name: string; phone: string; email: string; id_number: string;
@@ -22,6 +23,7 @@ interface Props {
 
 export function MarketerFormDialog({ open, onOpenChange, initialData, onSave }: Props) {
   const [form, setForm] = useState<MarketerFormData>(empty);
+  const { data: coupons } = useSupabaseTable<any>("coupons");
   const isEdit = !!initialData;
   useEffect(() => {
     if (initialData) { const { id, ...rest } = initialData as any; setForm({ ...empty, ...rest }); }
@@ -47,7 +49,18 @@ export function MarketerFormDialog({ open, onOpenChange, initialData, onSave }: 
             <div className="space-y-2"><Label className="font-semibold text-xs">ת.ז.</Label><Input value={form.id_number} onChange={(e) => set("id_number", e.target.value)} dir="ltr" className="rounded-xl" /></div>
             <div className="space-y-2"><Label className="font-semibold text-xs">קהילה</Label><Input value={form.community} onChange={(e) => set("community", e.target.value)} className="rounded-xl" /></div>
             <div className="space-y-2"><Label className="font-semibold text-xs">תנאי עמלה</Label><Input value={form.commission} onChange={(e) => set("commission", e.target.value)} placeholder="8% / ₪200 לכל לקוח" className="rounded-xl" /></div>
-            <div className="space-y-2"><Label className="font-semibold text-xs">קוד קופון</Label><Input value={form.coupon} onChange={(e) => set("coupon", e.target.value)} dir="ltr" className="rounded-xl" /></div>
+            <div className="space-y-2">
+              <Label className="font-semibold text-xs">קוד קופון</Label>
+              <Select value={form.coupon || "__none__"} onValueChange={(v) => set("coupon", v === "__none__" ? "" : v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="בחר קופון" /></SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="__none__">ללא</SelectItem>
+                  {coupons.map((c: any) => (
+                    <SelectItem key={c.id} value={c.code}>{c.name ? `${c.name} (${c.code})` : c.code}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2"><Label className="font-semibold text-xs">שותף מקושר</Label><Input value={form.partner_name} onChange={(e) => set("partner_name", e.target.value)} className="rounded-xl" /></div>
             <div className="space-y-2">
               <Label className="font-semibold text-xs">סטטוס</Label>
