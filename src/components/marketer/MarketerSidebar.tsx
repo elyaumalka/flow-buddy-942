@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, CheckSquare, UserCheck, Percent, Settings,
+  LayoutDashboard, Users, CheckSquare, UserCheck, Percent, Settings, Lightbulb, ShieldCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -12,6 +12,8 @@ import logo from "@/assets/logo.jpg";
 
 const menuItems = [
   { title: "דשבורד", url: "/marketer", icon: LayoutDashboard },
+  { title: "ייעוץ כלכלי", url: "/marketer/advisory", icon: Lightbulb },
+  { title: "גישה לנתונים", url: "/marketer/data-access", icon: ShieldCheck },
   { title: "לידים", url: "/marketer/leads", icon: Users },
   { title: "משימות", url: "/marketer/tasks", icon: CheckSquare },
   { title: "לקוחות", url: "/marketer/customers", icon: UserCheck },

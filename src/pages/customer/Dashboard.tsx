@@ -1,9 +1,15 @@
+import { useMemo } from "react";
 import { StatCard } from "@/components/admin/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Wallet, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Target, ArrowUpRight, ArrowDownRight, ClipboardList, Database } from "lucide-react";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { useSupabaseTable } from "@/hooks/useSupabaseTable";
+
+interface DatedRow { income_date?: string; expense_date?: string; created_at?: string }
+
+const hebMonthsShort = ["ינו", "פבר", "מרץ", "אפר", "מאי", "יוני", "יולי", "אוג", "ספט", "אוק", "נוב", "דצמ"];
 
 const cashFlowData = [
   { month: "ינו", income: 18000, expenses: 12000 },
@@ -37,6 +43,41 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function CustomerDashboard() {
+  const { data: income } = useSupabaseTable<DatedRow>("income", { userScoped: true });
+  const { data: expenses } = useSupabaseTable<DatedRow>("expenses", { userScoped: true });
+
+  const { thisMonthCount, totalEntries, activityData } = useMemo(() => {
+    const rowDate = (r: DatedRow, kind: "income" | "expense") => {
+      const raw = kind === "income" ? r.income_date : r.expense_date;
+      const d = new Date(raw ?? r.created_at ?? "");
+      return isNaN(d.getTime()) ? null : d;
+    };
+    const all = [
+      ...income.map((r) => rowDate(r, "income")),
+      ...expenses.map((r) => rowDate(r, "expense")),
+    ].filter((d): d is Date => d != null);
+
+    const now = new Date();
+    const thisMonth = all.filter(
+      (d) => d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+    ).length;
+
+    // Last 6 months buckets
+    const buckets: { key: string; month: string; count: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.push({ key: `${d.getFullYear()}-${d.getMonth()}`, month: hebMonthsShort[d.getMonth()], count: 0 });
+    }
+    const idx = new Map(buckets.map((b, i) => [b.key, i]));
+    all.forEach((d) => {
+      const k = `${d.getFullYear()}-${d.getMonth()}`;
+      const i = idx.get(k);
+      if (i != null) buckets[i].count++;
+    });
+
+    return { thisMonthCount: thisMonth, totalEntries: all.length, activityData: buckets };
+  }, [income, expenses]);
+
   return (
     <div className="space-y-6">
       <div className="animate-fade-in">
@@ -50,6 +91,42 @@ export default function CustomerDashboard() {
         <StatCard title="יתרה נוכחית" value="₪7,470" icon={Wallet} iconClassName="bg-primary/10 text-primary" delay={100} />
         <StatCard title="עמידה ביעד" value="82%" icon={Target} trend="יעד: ₪25,000" iconClassName="bg-chart-3/10 text-chart-3" delay={150} />
       </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StatCard title="נתונים שהוזנו החודש" value={thisMonthCount} icon={ClipboardList} iconClassName="bg-primary/10 text-primary" delay={0} />
+        <StatCard title='סה"כ רשומות' value={totalEntries} icon={Database} iconClassName="bg-chart-3/10 text-chart-3" delay={50} />
+      </div>
+
+      <Card className="card-premium animate-slide-up" style={{ animationDelay: "150ms" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-bold">פעילות הזנת נתונים</CardTitle>
+          <p className="text-xs text-muted-foreground">מספר הרשומות שהזנת ב-6 החודשים האחרונים</p>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={activityData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
+              <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+              <Tooltip
+                cursor={{ fill: "hsl(var(--primary))", fillOpacity: 0.06 }}
+                content={({ active, payload, label }: any) => {
+                  if (!active || !payload || !payload.length) return null;
+                  return (
+                    <div className="glass-strong rounded-xl px-4 py-3 shadow-lg">
+                      <p className="font-bold text-foreground text-sm mb-1">{label}</p>
+                      <p className="text-xs" style={{ color: "hsl(var(--primary))" }}>
+                        רשומות: {payload[0].value}
+                      </p>
+                    </div>
+                  );
+                }}
+              />
+              <Bar dataKey="count" name="רשומות" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} maxBarSize={48} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
       <Card className="card-premium animate-slide-up" style={{ animationDelay: "100ms" }}>
         <CardHeader className="pb-2">

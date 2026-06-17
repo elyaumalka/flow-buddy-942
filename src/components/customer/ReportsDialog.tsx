@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { gregWithHebrew } from "@/lib/hebrewDate";
+import { formatNumber } from "@/lib/format";
+import { TITHE_RATES } from "@/lib/financeConstants";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -20,6 +22,7 @@ import heeboFontUrl from "@/assets/fonts/Heebo-Regular.ttf?url";
 type ReportType = "general" | "tithe" | "income" | "expense" | "categories" | "analysis";
 type Period = "monthly" | "quarterly" | "yearly" | "range";
 type FileFormat = "pdf" | "xlsx";
+type ReportKind = "cashflow" | "incomeExpense";
 
 interface Props { open: boolean; onOpenChange: (open: boolean) => void; }
 
@@ -39,8 +42,10 @@ const reverseHebrew = (s: string) => (s ? s.split("").reverse().join("") : s);
 export function ReportsDialog({ open, onOpenChange }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [reportKind, setReportKind] = useState<ReportKind>("cashflow");
   const [reportType, setReportType] = useState<ReportType>("general");
   const [period, setPeriod] = useState<Period>("monthly");
+  const [titheRate, setTitheRate] = useState<number>(10);
   const [fileFormat, setFileFormat] = useState<FileFormat>("pdf");
   const [rangeStart, setRangeStart] = useState("");
   const [rangeEnd, setRangeEnd] = useState("");
@@ -116,12 +121,14 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
 
     if (reportType === "general" || reportType === "tithe") {
       const summary: any[][] = [["פריט", "סכום (₪)"]];
+      summary.push(["סוג הצגה", reportKind === "cashflow" ? "תזרימי" : "הכנסות והוצאות"]);
       summary.push(["סך הכנסות", fmt(sumIncome)]);
       summary.push(["סך הוצאות", fmt(sumExpense)]);
-      summary.push(["יתרה", fmt(sumIncome - sumExpense)]);
-      summary.push(["מעשר צפוי (10%)", fmt(Math.round(sumIncome * 0.1))]);
+      summary.push([reportKind === "cashflow" ? "תזרים (יתרה)" : "יתרה", fmt(sumIncome - sumExpense)]);
+      const titheDue = Math.round(sumIncome * (titheRate / 100));
+      summary.push([`מעשר צפוי (${titheRate}%)`, fmt(titheDue)]);
       summary.push(["מעשר שולם", fmt(sumTithe)]);
-      summary.push(["נותר לתשלום", fmt(Math.max(Math.round(sumIncome * 0.1) - sumTithe, 0))]);
+      summary.push(["נותר לתשלום", fmt(Math.max(titheDue - sumTithe, 0))]);
       const incPendingCount = incomeRows.filter((r: any) => r.status !== "מאושר").length;
       const expPendingCount = expenseRows.filter((r: any) => r.status !== "מאושר").length;
       if (incPendingCount > 0 || expPendingCount > 0) {
@@ -203,15 +210,16 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
     if (fontB64) { doc.addFileToVFS("Heebo.ttf", fontB64); doc.addFont("Heebo.ttf", "Heebo", "normal"); doc.setFont("Heebo"); }
     const t = (s: string) => (fontB64 ? reverseHebrew(s) : s);
     const baseFont = fontB64 ? "Heebo" : "helvetica";
-    const fmtNum = (n: number) => Number(n || 0).toLocaleString();
+    const fmtNum = (n: number) => formatNumber(Number(n || 0));
 
     const titleMap: Record<ReportType, string> = {
       general: "דוח כללי", tithe: "דוח מעשרות", income: "דוח הכנסות",
       expense: "דוח הוצאות", categories: "דוח קטגוריות", analysis: "דוח ניתוח",
     };
+    const kindLabel = reportKind === "cashflow" ? "תזרימי" : "הכנסות והוצאות";
     doc.setFontSize(16); doc.text(t(titleMap[reportType]), 200, 15, { align: "right" });
     doc.setFontSize(10);
-    doc.text(t(`תקופה: ${label}`), 200, 23, { align: "right" });
+    doc.text(t(`תקופה: ${label}  |  סוג: ${kindLabel}`), 200, 23, { align: "right" });
     doc.text(t(`הופק: ${gregWithHebrew(new Date())}`), 200, 29, { align: "right" });
 
     const sumIncome = incomeRows.reduce((s, r: any) => s + Number(r.amount || 0), 0);
@@ -259,8 +267,14 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
     }
 
     if (reportType === "general") {
+      const titheDue = Math.round(sumIncome * (titheRate / 100));
+      const summaryBody: any[] = [[fmtNum(sumIncome), t("סך הכנסות")], [fmtNum(sumExpense), t("סך הוצאות")]];
+      summaryBody.push([fmtNum(balance), t(reportKind === "cashflow" ? "תזרים (יתרה)" : "יתרה (הכנסות פחות הוצאות)")]);
+      summaryBody.push([fmtNum(titheDue), t(`מעשר צפוי (${titheRate}%)`)]);
+      summaryBody.push([fmtNum(sumTithe), t("מעשרות שולמו")]);
+      summaryBody.push([fmtNum(Math.max(titheDue - sumTithe, 0)), t("מעשר שנותר לתשלום")]);
       autoTable(doc, { startY: cursorY, head: [[t("סכום (₪)"), t("פריט")]],
-        body: [[fmtNum(sumIncome), t("סך הכנסות")], [fmtNum(sumExpense), t("סך הוצאות")], [fmtNum(balance), t("יתרה / תזרים")], [fmtNum(sumTithe), t("מעשרות שולמו")]],
+        body: summaryBody,
         styles: { font: baseFont, halign: "right", fontSize: 11 }, headStyles: { fillColor: [22, 78, 99], halign: "right" } });
       cursorY = (doc as any).lastAutoTable.finalY + 8;
       cursorY = drawCompareBar(cursorY, "השוואה ויזואלית", [
@@ -289,8 +303,9 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
           didDrawPage: (d) => { doc.setFontSize(12); doc.text(t("פירוט מעשרות"), 200, d.settings.startY! - 4, { align: "right" }); } });
       }
     } else if (reportType === "tithe") {
+      const titheDue = Math.round(sumIncome * (titheRate / 100));
       autoTable(doc, { startY: cursorY, head: [[t("סכום (₪)"), t("פריט")]],
-        body: [[fmtNum(sumIncome), t("סך הכנסות")], [fmtNum(Math.round(sumIncome * 0.1)), t("מעשר צפוי (10%)")], [fmtNum(sumTithe), t("מעשר שולם")], [fmtNum(Math.max(Math.round(sumIncome * 0.1) - sumTithe, 0)), t("נותר לתשלום")]],
+        body: [[fmtNum(sumIncome), t("סך הכנסות")], [fmtNum(titheDue), t(`מעשר צפוי (${titheRate}%)`)], [fmtNum(sumTithe), t("מעשר שולם")], [fmtNum(Math.max(titheDue - sumTithe, 0)), t("נותר לתשלום")]],
         styles: { font: baseFont, halign: "right", fontSize: 11 }, headStyles: { fillColor: [99, 102, 241], halign: "right" } });
       autoTable(doc, { startY: (doc as any).lastAutoTable.finalY + 10,
         head: [[t("סכום"), t("למי ניתן"), t("הערות"), t("תאריך")]],
@@ -399,7 +414,8 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         const blob = fmt === "pdf"
           ? await buildPdf(incomeRows, expenseRows, titheRows, label)
           : await buildXlsx(incomeRows, expenseRows, titheRows, label);
-        files.push({ name: `${reportType}_${safeLabel}.${fmt}`, blob, ext: fmt });
+        const pwSuffix = usePassword && fmt === "pdf" && password ? "_מוגן" : "";
+        files.push({ name: `${reportType}_${reportKind}_${safeLabel}${pwSuffix}.${fmt}`, blob, ext: fmt });
       }
 
       if (delivery === "download") {
@@ -422,7 +438,7 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         const subject = encodeURIComponent(`דוח: ${reportType} — ${label}`);
         const body = encodeURIComponent(`שלום,\n\nמצורפים קישורי הורדה לדוח (תקפים ל-7 ימים):\n\n${links.join("\n\n")}\n\nבברכה`);
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
-        toast({ title: "נפתח חלון מייל", description: "הקבצים הועלו וקישורי הורדה צורפו" });
+        toast({ title: "הדו\"ח נשלח למייל", description: "הקבצים הופקו וקישורי הורדה צורפו" });
       }
 
       onOpenChange(false);
@@ -446,6 +462,21 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-3 space-y-2 shadow-glow-sm">
+            <Label className="font-bold text-xs text-primary">אופן הצגת הדוח</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { v: "cashflow", l: "תזרימי" },
+                { v: "incomeExpense", l: "הכנסות והוצאות" },
+              ] as const).map((o) => (
+                <button key={o.v} type="button" onClick={() => setReportKind(o.v)}
+                  className={`p-2.5 rounded-lg border text-sm transition-all ${reportKind === o.v ? "border-primary bg-primary text-primary-foreground font-bold shadow-glow-sm" : "border-border bg-background"}`}>
+                  {o.l}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label className="font-semibold text-xs">סוג הדוח</Label>
             <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
@@ -479,6 +510,20 @@ export function ReportsDialog({ open, onOpenChange }: Props) {
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {(reportType === "general" || reportType === "tithe") && (
+            <div className="space-y-2">
+              <Label className="font-semibold text-xs">שיעור מעשר</Label>
+              <Select value={String(titheRate)} onValueChange={(v) => setTitheRate(Number(v))}>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {TITHE_RATES.map((r) => (
+                    <SelectItem key={r.value} value={String(r.value)}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

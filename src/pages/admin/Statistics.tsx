@@ -1,4 +1,11 @@
+import { useMemo, useState } from "react";
+import * as XLSX from "xlsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Download, ClipboardList } from "lucide-react";
+import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
@@ -39,8 +46,39 @@ const conversionData = [
 ];
 
 export default function AdminStatistics() {
+  const { data: income } = useSupabaseTable<any>("income", { userScoped: true });
+  const { data: expenses } = useSupabaseTable<any>("expenses", { userScoped: true });
+
+  const [entrySource, setEntrySource] = useState<string>("all"); // all | income | expense
+
+  // "אופן הזנת נתונים" — how customers enter data, grouped by a notional source (payment_method / category).
+  const entryRows = useMemo(() => {
+    const rows: { method: string; kind: string }[] = [];
+    if (entrySource === "all" || entrySource === "income")
+      (income || []).forEach((r: any) => rows.push({ method: r.payment_method || r.category || "לא צוין", kind: "הכנסה" }));
+    if (entrySource === "all" || entrySource === "expense")
+      (expenses || []).forEach((r: any) => rows.push({ method: r.payment_method || r.category || "לא צוין", kind: "הוצאה" }));
+    return rows;
+  }, [income, expenses, entrySource]);
+
+  const entryCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    entryRows.forEach((r) => map.set(r.method, (map.get(r.method) || 0) + 1));
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [entryRows]);
+
+  const exportEntries = () => {
+    const sheetData = entryCounts.map((e) => ({ "אופן הזנה": e.name, "כמות רשומות": e.count }));
+    const ws = XLSX.utils.json_to_sheet(sheetData.length ? sheetData : [{ "אופן הזנה": "אין נתונים", "כמות רשומות": 0 }]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "אופן הזנת נתונים");
+    XLSX.writeFile(wb, "data-entry-stats.xlsx");
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-foreground">סטטיסטיקות</h1>
         <p className="text-muted-foreground">גרפים ונתונים סטטיסטיים</p>
@@ -92,6 +130,54 @@ export default function AdminStatistics() {
           </CardContent>
         </Card>
       </div>
+
+      {/* אופן הזנת נתונים */}
+      <Card className="animate-fade-in">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <ClipboardList className="h-5 w-5 text-primary" />
+              </div>
+              <CardTitle className="text-base">אופן הזנת נתונים</CardTitle>
+            </div>
+            <div className="flex items-end gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">סוג רשומה</Label>
+                <Select value={entrySource} onValueChange={setEntrySource}>
+                  <SelectTrigger className="rounded-xl h-9 w-36"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="all">הכל</SelectItem>
+                    <SelectItem value="income">הכנסות</SelectItem>
+                    <SelectItem value="expense">הוצאות</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="outline" className="rounded-xl" onClick={exportEntries}>
+                <Download className="h-4 w-4 ml-1" /> ייצוא לאקסל
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            כיצד לקוחות מזינים נתונים — ספירת רשומות לפי אופן ההזנה (סה״כ {entryRows.length} רשומות).
+          </p>
+          {entryCounts.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">אין נתונים להצגה</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={entryCounts}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip formatter={(v) => `${v} רשומות`} />
+                <Bar dataKey="count" name="כמות רשומות" fill="hsl(var(--chart-1))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

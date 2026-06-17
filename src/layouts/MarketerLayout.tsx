@@ -24,6 +24,7 @@ export default function MarketerLayout() {
             <div className="flex items-center gap-3">
               <SidebarTrigger className="rounded-xl hover:bg-primary/10 transition-colors" />
               <h2 className="text-lg font-bold text-foreground">פאנל משווק</h2>
+              <span className="rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 text-[11px] font-bold px-2.5 py-0.5">מושהה</span>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />

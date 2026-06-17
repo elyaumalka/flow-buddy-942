@@ -14,11 +14,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { Trash2 } from "lucide-react";
 
 const columns = [
+  { key: "customer_code", header: "קוד" },
   { key: "name", header: "שם" },
   { key: "phone", header: "טלפון" },
   { key: "email", header: "מייל" },
   { key: "community", header: "קהילה" },
-  { key: "modules", header: "מודולים" },
   { key: "marketer_name", header: "משווק" },
   { key: "subscription", header: "מנוי", render: (item: any) => <StatusBadge status={item.subscription} /> },
   { key: "join_date", header: "הצטרפות", render: (item: any) => new Date(item.join_date).toLocaleDateString("he-IL") },
@@ -26,7 +26,6 @@ const columns = [
 
 const bulkFields: BulkField[] = [
   { key: "community", label: "קהילה", type: "text" },
-  { key: "modules", label: "מודולים", type: "text" },
   { key: "marketer_name", label: "משווק", type: "text" },
   { key: "subscription", label: "סטטוס מנוי", type: "select", options: ["פעיל", "לא פעיל", "מושהה"] },
 ];
@@ -35,7 +34,6 @@ const filters: FilterDef[] = [
   { key: "subscription", label: "סטטוס מנוי", options: ["פעיל", "לא פעיל", "מושהה"] },
   { key: "community", label: "קהילה" },
   { key: "marketer_name", label: "משווק" },
-  { key: "modules", label: "מודולים" },
 ];
 
 export default function AdminCustomers() {

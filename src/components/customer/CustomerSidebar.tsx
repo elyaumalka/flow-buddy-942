@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, ArrowLeftRight, Target, BarChart3, Heart, Settings,
+  LayoutDashboard, ArrowLeftRight, Target, BarChart3, Heart, Settings, MessageSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -15,7 +15,8 @@ const menuItems = [
   { title: "עובר ושב", url: "/dashboard/cashflow", icon: ArrowLeftRight },
   { title: "יעדים", url: "/dashboard/goals", icon: Target },
   { title: "סטטיסטיקות", url: "/dashboard/statistics", icon: BarChart3 },
-  { title: "מעשרות", url: "/dashboard/tithes", icon: Heart },
+  { title: "מאזן מעשר", url: "/dashboard/tithes", icon: Heart },
+  { title: "פניות", url: "/dashboard/inquiries", icon: MessageSquare },
   { title: "הגדרות", url: "/dashboard/settings", icon: Settings },
 ];
 

@@ -8,10 +8,11 @@ import { UserCheck, Save } from "lucide-react";
 
 export interface CustomerFormData {
   name: string; phone: string; email: string;
-  community: string; marketer_name: string; modules: string; subscription: string;
+  community: string; marketer_name: string; subscription: string;
+  subscription_months: string; subscription_end: string; credit_card_last4: string;
 }
 
-const empty: CustomerFormData = { name: "", phone: "", email: "", community: "", marketer_name: "", modules: "", subscription: "פעיל" };
+const empty: CustomerFormData = { name: "", phone: "", email: "", community: "", marketer_name: "", subscription: "פעיל", subscription_months: "", subscription_end: "", credit_card_last4: "" };
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
@@ -27,7 +28,17 @@ export function CustomerFormDialog({ open, onOpenChange, initialData, onSave }: 
     else setForm(empty);
   }, [initialData, open]);
   const set = (key: keyof CustomerFormData, value: string) => setForm((p) => ({ ...p, [key]: value }));
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form, (initialData as any)?.id); onOpenChange(false); };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload: any = {
+      ...form,
+      subscription_months: form.subscription_months === "" ? null : Number(form.subscription_months),
+      subscription_end: form.subscription_end === "" ? null : form.subscription_end,
+      credit_card_last4: form.credit_card_last4 === "" ? null : form.credit_card_last4,
+    };
+    onSave(payload, (initialData as any)?.id);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +56,9 @@ export function CustomerFormDialog({ open, onOpenChange, initialData, onSave }: 
             <div className="space-y-2"><Label className="font-semibold text-xs">מייל</Label><Input value={form.email} onChange={(e) => set("email", e.target.value)} type="email" dir="ltr" className="rounded-xl" /></div>
             <div className="space-y-2"><Label className="font-semibold text-xs">קהילה</Label><Input value={form.community} onChange={(e) => set("community", e.target.value)} className="rounded-xl" /></div>
             <div className="space-y-2"><Label className="font-semibold text-xs">משווק</Label><Input value={form.marketer_name} onChange={(e) => set("marketer_name", e.target.value)} className="rounded-xl" /></div>
-            <div className="space-y-2"><Label className="font-semibold text-xs">מודולים</Label><Input value={form.modules} onChange={(e) => set("modules", e.target.value)} placeholder="הכנסות, הוצאות..." className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">מספר חודשי מנוי</Label><Input value={form.subscription_months} onChange={(e) => set("subscription_months", e.target.value)} type="number" min={0} dir="ltr" className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">תוקף מנוי</Label><Input value={form.subscription_end} onChange={(e) => set("subscription_end", e.target.value)} type="date" dir="ltr" className="rounded-xl" /></div>
+            <div className="space-y-2"><Label className="font-semibold text-xs">ספרות אחרונות אשראי</Label><Input value={form.credit_card_last4} onChange={(e) => set("credit_card_last4", e.target.value)} maxLength={4} dir="ltr" placeholder="1234" className="rounded-xl" /></div>
             <div className="space-y-2">
               <Label className="font-semibold text-xs">סטטוס מנוי</Label>
               <Select value={form.subscription} onValueChange={(v) => set("subscription", v)}>

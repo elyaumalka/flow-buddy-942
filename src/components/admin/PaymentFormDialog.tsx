@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreditCard, Save } from "lucide-react";
+import { PAYMENT_METHODS as BASE_PAYMENT_METHODS } from "@/lib/financeConstants";
 
 export interface PaymentFormData {
   customer_id?: string | null;
@@ -18,10 +19,14 @@ export interface PaymentFormData {
   period_month?: string;
   period_start?: string | null;
   period_end?: string | null;
+  billing_day?: number | null;
   notes?: string;
 }
 
-const PAYMENT_METHODS = ["מזומן", "העברה בנקאית", "אשראי", "צ'ק", "הוראת קבע", "ביט", "פייבוקס"];
+// Ensure the key methods בנקאי / מזומן / אשראי are present, alongside the shared list.
+const PAYMENT_METHODS = Array.from(
+  new Set<string>(["אשראי", "מזומן", "בנקאי", ...BASE_PAYMENT_METHODS])
+);
 const STATUSES = ["שולם", "ממתין", "נכשל", "מבוטל"];
 
 const empty: PaymentFormData = {
@@ -29,12 +34,13 @@ const empty: PaymentFormData = {
   customer_name: "",
   amount: 0,
   payment_date: new Date().toISOString().split("T")[0],
-  payment_method: "מזומן",
+  payment_method: "בנקאי",
   status: "שולם",
   invoice: "",
   period_month: new Date().toISOString().slice(0, 7),
   period_start: null,
   period_end: null,
+  billing_day: null,
   notes: "",
 };
 
@@ -142,12 +148,25 @@ export function PaymentFormDialog({ open, onOpenChange, initialData, customers, 
               <Input value={form.invoice ?? ""} onChange={(e) => set("invoice", e.target.value)} placeholder="מספר חשבונית" className="rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label className="font-semibold text-xs">תקופה - מ (אופציונלי)</Label>
+              <Label className="font-semibold text-xs">תקופה - מתאריך</Label>
               <Input type="date" value={form.period_start ?? ""} onChange={(e) => set("period_start", e.target.value || null)} className="rounded-xl" dir="ltr" />
             </div>
             <div className="space-y-2">
-              <Label className="font-semibold text-xs">תקופה - עד (אופציונלי)</Label>
+              <Label className="font-semibold text-xs">עד תאריך</Label>
               <Input type="date" value={form.period_end ?? ""} onChange={(e) => set("period_end", e.target.value || null)} className="rounded-xl" dir="ltr" />
+            </div>
+            <div className="space-y-2">
+              <Label className="font-semibold text-xs">יום חיוב</Label>
+              <Input
+                type="number"
+                min={1}
+                max={31}
+                value={form.billing_day ?? ""}
+                onChange={(e) => set("billing_day", e.target.value === "" ? null : Number(e.target.value))}
+                placeholder="1-31"
+                className="rounded-xl"
+                dir="ltr"
+              />
             </div>
           </div>
 

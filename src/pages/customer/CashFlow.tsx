@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import * as XLSX from "xlsx";
 import { DataTable } from "@/components/admin/DataTable";
 import { StatCard } from "@/components/admin/StatCard";
-import { TrendingUp, TrendingDown, Scale, Calendar, CheckCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Scale, Calendar, CheckCircle, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSupabaseTable } from "@/hooks/useSupabaseTable";
 import { useToast } from "@/hooks/use-toast";
 import { IncomeFormDialog, IncomeFormData } from "@/components/customer/IncomeFormDialog";
 import { ExpenseFormDialog, ExpenseFormData } from "@/components/customer/ExpenseFormDialog";
 import { BulkEditDialog, BulkField } from "@/components/admin/BulkEditDialog";
+import { formatCurrency } from "@/lib/format";
+import { formatHebrewDate } from "@/lib/hebrewDate";
+import { ENTRY_TYPES, ENTRY_STATUSES, PAYMENT_METHODS } from "@/lib/financeConstants";
 
 const statusMap: Record<string, string> = {
   "מאושר": "bg-success/10 text-success border-success/20",
@@ -16,37 +23,85 @@ const statusMap: Record<string, string> = {
   "צפוי": "bg-primary/10 text-primary border-primary/20",
 };
 
+const dateCell = (value: string) => (
+  <div className="flex flex-col">
+    <span>{new Date(value).toLocaleDateString("he-IL")}</span>
+    <span className="text-[11px] text-muted-foreground">{formatHebrewDate(value)}</span>
+  </div>
+);
+
 const incomeColumns = [
-  { key: "amount", header: "סכום", render: (item: any) => `₪${Number(item.amount).toLocaleString()}` },
-  { key: "income_date", header: "תאריך", render: (item: any) => new Date(item.income_date).toLocaleDateString("he-IL") },
-  { key: "type", header: "סוג", render: (item: any) => <Badge variant="outline" className="font-medium">{item.type}</Badge> },
+  { key: "income_date", header: "תאריך", render: (item: any) => dateCell(item.income_date) },
+  { key: "amount", header: "סכום", render: (item: any) => formatCurrency(item.amount) },
   { key: "category", header: "קטגוריה" },
+  { key: "description", header: "תיאור", render: (item: any) => item.description || "" },
   { key: "payment_method", header: "אופן ביצוע", render: (item: any) => <Badge variant="outline" className="font-medium">{item.payment_method || "ללא"}</Badge> },
+  { key: "type", header: "סוג", render: (item: any) => <Badge variant="outline" className="font-medium">{item.type}</Badge> },
   { key: "status", header: "סטטוס", render: (item: any) => <Badge variant="outline" className={`font-medium ${statusMap[item.status] || ""}`}>{item.status}</Badge> },
 ];
 
 const expenseColumns = [
-  { key: "amount", header: "סכום", render: (item: any) => `₪${Number(item.amount).toLocaleString()}` },
-  { key: "expense_date", header: "תאריך", render: (item: any) => new Date(item.expense_date).toLocaleDateString("he-IL") },
-  { key: "type", header: "סוג", render: (item: any) => <Badge variant="outline" className="font-medium">{item.type}</Badge> },
+  { key: "expense_date", header: "תאריך", render: (item: any) => dateCell(item.expense_date) },
+  { key: "amount", header: "סכום", render: (item: any) => formatCurrency(item.amount) },
   { key: "category", header: "קטגוריה" },
+  { key: "description", header: "תיאור", render: (item: any) => item.description || "" },
   { key: "payment_method", header: "אופן ביצוע", render: (item: any) => <Badge variant="outline" className="font-medium">{item.payment_method || "ללא"}</Badge> },
+  { key: "type", header: "סוג", render: (item: any) => <Badge variant="outline" className="font-medium">{item.type}</Badge> },
   { key: "status", header: "סטטוס", render: (item: any) => <Badge variant="outline" className={`font-medium ${statusMap[item.status] || ""}`}>{item.status}</Badge> },
 ];
 
 const incomeBulkFields: BulkField[] = [
-  { key: "type", label: "סוג", type: "select", options: ["חודשי", "חד פעמי"] },
+  { key: "type", label: "סוג", type: "select", options: [...ENTRY_TYPES] },
   { key: "category", label: "קטגוריה", type: "text" },
-  { key: "payment_method", label: "אופן ביצוע", type: "select", options: ["אשראי", "מזומן", "בנקאי", "אחר", "ללא"] },
-  { key: "status", label: "סטטוס", type: "select", options: ["מאושר", "לאישור", "צפוי"] },
+  { key: "description", label: "תיאור", type: "text" },
+  { key: "payment_method", label: "אופן ביצוע", type: "select", options: [...PAYMENT_METHODS] },
+  { key: "status", label: "סטטוס", type: "select", options: [...ENTRY_STATUSES] },
 ];
 
 const expenseBulkFields: BulkField[] = [
-  { key: "type", label: "סוג", type: "select", options: ["חודשי", "חד פעמי"] },
+  { key: "type", label: "סוג", type: "select", options: [...ENTRY_TYPES] },
   { key: "category", label: "קטגוריה", type: "text" },
-  { key: "payment_method", label: "אופן ביצוע", type: "select", options: ["אשראי", "מזומן", "בנקאי", "אחר", "ללא"] },
-  { key: "status", label: "סטטוס", type: "select", options: ["מאושר", "לאישור", "צפוי"] },
+  { key: "description", label: "תיאור", type: "text" },
+  { key: "payment_method", label: "אופן ביצוע", type: "select", options: [...PAYMENT_METHODS] },
+  { key: "status", label: "סטטוס", type: "select", options: [...ENTRY_STATUSES] },
 ];
+
+const currentMonth = () => new Date().toISOString().slice(0, 7);
+const inMonth = (dateStr: string, month: string) => !month || (dateStr && String(dateStr).slice(0, 7) === month);
+
+function exportRows(rows: any[], dateKey: string, fileName: string) {
+  const aoa = rows.map((r) => ({
+    "תאריך": r[dateKey] ? new Date(r[dateKey]).toLocaleDateString("he-IL") : "",
+    "תאריך עברי": formatHebrewDate(r[dateKey]),
+    "סכום": Number(r.amount || 0),
+    "קטגוריה": r.category || "",
+    "תיאור": r.description || "",
+    "אופן ביצוע": r.payment_method || "",
+    "סוג": r.type || "",
+    "סטטוס": r.status || "",
+  }));
+  const ws = XLSX.utils.json_to_sheet(aoa, { header: ["תאריך", "תאריך עברי", "סכום", "קטגוריה", "תיאור", "אופן ביצוע", "סוג", "סטטוס"] });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, fileName);
+}
+
+interface MonthFilterProps { value: string; onChange: (v: string) => void; }
+function MonthFilter({ value, onChange }: MonthFilterProps) {
+  return (
+    <div className="flex items-end gap-2">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold">חודש</Label>
+        <Input type="month" value={value} onChange={(e) => onChange(e.target.value)} className="rounded-xl w-44" dir="ltr" />
+      </div>
+      {value && (
+        <Button variant="outline" size="sm" className="rounded-xl" onClick={() => onChange("")}>
+          <X className="h-3.5 w-3.5 ml-1" /> כל החודשים
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export default function CashFlow() {
   const { toast } = useToast();
@@ -54,6 +109,9 @@ export default function CashFlow() {
   const { data: expenseData, insert: insertExpense, update: updateExpense, bulkUpdate: bulkUpdateExpense, bulkRemove: bulkRemoveExpense } = useSupabaseTable("expenses", { userScoped: true });
 
   const [activeTab, setActiveTab] = useState("income");
+
+  const [incomeMonth, setIncomeMonth] = useState(currentMonth());
+  const [expenseMonth, setExpenseMonth] = useState(currentMonth());
 
   const [incomeDialogOpen, setIncomeDialogOpen] = useState(false);
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
@@ -64,6 +122,9 @@ export default function CashFlow() {
   const [expenseBulkOpen, setExpenseBulkOpen] = useState(false);
   const [incomeBulkIds, setIncomeBulkIds] = useState<string[]>([]);
   const [expenseBulkIds, setExpenseBulkIds] = useState<string[]>([]);
+
+  const filteredIncome = useMemo(() => incomeData.filter((i: any) => inMonth(i.income_date, incomeMonth)), [incomeData, incomeMonth]);
+  const filteredExpense = useMemo(() => expenseData.filter((i: any) => inMonth(i.expense_date, expenseMonth)), [expenseData, expenseMonth]);
 
   const incomeTotal = incomeData.filter((i: any) => i.status === "מאושר").reduce((sum, i: any) => sum + Number(i.amount || 0), 0);
   const incomeExpected = incomeData.filter((i: any) => i.status === "צפוי").reduce((sum, i: any) => sum + Number(i.amount || 0), 0);
@@ -110,6 +171,9 @@ export default function CashFlow() {
     toast({ title: `${ids.length} רשומות נמחקו` });
   };
 
+  const handleExportIncome = () => { exportRows(filteredIncome, "income_date", "הכנסות.xlsx"); toast({ title: "הקובץ יוצא" }); };
+  const handleExportExpense = () => { exportRows(filteredExpense, "expense_date", "הוצאות.xlsx"); toast({ title: "הקובץ יוצא" }); };
+
   return (
     <div className="space-y-6">
       <div>
@@ -148,13 +212,14 @@ export default function CashFlow() {
             <StatCard title="הכנסות צפויות" value={`₪${incomeExpected.toLocaleString()}`} icon={Calendar} iconClassName="bg-primary/10 text-primary" />
             <StatCard title="לאישור" value={incomePending} icon={CheckCircle} iconClassName="bg-chart-3/10 text-chart-3" />
           </div>
+          <MonthFilter value={incomeMonth} onChange={setIncomeMonth} />
           <DataTable
-            data={incomeData}
+            data={filteredIncome}
             columns={incomeColumns}
             title="הכנסות"
             addLabel="הכנסה חדשה"
             onAdd={handleAddIncome}
-            onExport={() => toast({ title: "ייצוא" })}
+            onExport={handleExportIncome}
             onRowClick={handleEditIncome}
             onBulkEdit={handleIncomeBulkEdit}
             onBulkDelete={handleIncomeBulkDelete}
@@ -168,13 +233,14 @@ export default function CashFlow() {
             <StatCard title="הוצאות צפויות" value={`₪${expenseExpected.toLocaleString()}`} icon={Calendar} iconClassName="bg-primary/10 text-primary" />
             <StatCard title="לאישור" value={expensePending} icon={CheckCircle} iconClassName="bg-chart-3/10 text-chart-3" />
           </div>
+          <MonthFilter value={expenseMonth} onChange={setExpenseMonth} />
           <DataTable
-            data={expenseData}
+            data={filteredExpense}
             columns={expenseColumns}
             title="הוצאות"
             addLabel="הוצאה חדשה"
             onAdd={handleAddExpense}
-            onExport={() => toast({ title: "ייצוא" })}
+            onExport={handleExportExpense}
             onRowClick={handleEditExpense}
             onBulkEdit={handleExpenseBulkEdit}
             onBulkDelete={handleExpenseBulkDelete}

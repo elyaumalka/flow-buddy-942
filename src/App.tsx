@@ -35,12 +35,15 @@ import MarketerTasks from "@/pages/marketer/Tasks";
 import MarketerCustomers from "@/pages/marketer/Customers";
 import MarketerCommissions from "@/pages/marketer/Commissions";
 import MarketerSettings from "@/pages/marketer/Settings";
+import MarketerAdvisory from "@/pages/marketer/Advisory";
+import MarketerDataAccess from "@/pages/marketer/DataAccess";
 import CustomerLayout from "@/layouts/CustomerLayout";
 import CustomerDashboard from "@/pages/customer/Dashboard";
 import CashFlow from "@/pages/customer/CashFlow";
 import CustomerGoals from "@/pages/customer/Goals";
 import CustomerStatistics from "@/pages/customer/Statistics";
 import CustomerTithes from "@/pages/customer/Tithes";
+import CustomerInquiries from "@/pages/customer/Inquiries";
 import CustomerSettings from "@/pages/customer/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -114,6 +117,8 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<MarketerDashboard />} />
+              <Route path="advisory" element={<MarketerAdvisory />} />
+              <Route path="data-access" element={<MarketerDataAccess />} />
               <Route path="leads" element={<MarketerLeads />} />
               <Route path="tasks" element={<MarketerTasks />} />
               <Route path="customers" element={<MarketerCustomers />} />
@@ -131,6 +136,7 @@ const App = () => (
               <Route path="goals" element={<CustomerGoals />} />
               <Route path="statistics" element={<CustomerStatistics />} />
               <Route path="tithes" element={<CustomerTithes />} />
+              <Route path="inquiries" element={<CustomerInquiries />} />
               <Route path="settings" element={<CustomerSettings />} />
             </Route>
 

@@ -659,6 +659,135 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          archived: boolean
+          category_type: string
+          created_at: string
+          extension: string | null
+          id: string
+          kind: string
+          name: string
+          period: string | null
+          tithe_liable: boolean
+          tithe_offset: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          category_type?: string
+          created_at?: string
+          extension?: string | null
+          id?: string
+          kind?: string
+          name: string
+          period?: string | null
+          tithe_liable?: boolean
+          tithe_offset?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          category_type?: string
+          created_at?: string
+          extension?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          period?: string | null
+          tithe_liable?: boolean
+          tithe_offset?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      inquiries: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          data: Json
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          data?: Json
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      call_logs: {
+        Row: {
+          call_count: number
+          caller_name: string | null
+          converted_lead: boolean
+          created_at: string
+          id: string
+          last_call_at: string
+          phone: string
+          total_seconds: number
+        }
+        Insert: {
+          call_count?: number
+          caller_name?: string | null
+          converted_lead?: boolean
+          created_at?: string
+          id?: string
+          last_call_at?: string
+          phone: string
+          total_seconds?: number
+        }
+        Update: {
+          call_count?: number
+          caller_name?: string | null
+          converted_lead?: boolean
+          created_at?: string
+          id?: string
+          last_call_at?: string
+          phone?: string
+          total_seconds?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
